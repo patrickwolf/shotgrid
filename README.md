@@ -24,9 +24,9 @@ a `dist.json` file.
 
 ## Configuration
 
-Default settings are stored in an env stack .env file. They can be stored in the
-default stack, or in a namespaced `shotgrid.env` stack file to keep settings
-separate.
+Default settings are stored in an [envstack](https://github.com/rsgalloway/envstack)
+.env file. They can be stored in the default stack, or in a namespaced `shotgrid.env`
+stack file to keep settings separate.
 
 Start by renaming or copying the `example_shotgrid.env` file:
 
@@ -34,7 +34,7 @@ Start by renaming or copying the `example_shotgrid.env` file:
 $ cp example_shotgrid.env shotgrid.env
 ```
 
-and editing it's contents with the appropriate values:
+Then edit it's contents with the appropriate values:
 
 ```yaml
 LOG_LEVEL: INFO
@@ -49,7 +49,7 @@ Basic usage:
 
 ```python
 >>> from shotgrid import Shotgrid
->>> sg = Shotun()
+>>> sg = Shotgrid()
 >>> show = sg.get_projects("Demo: Animation")[0]
 >>> shot = show.get_shots("bunny_080_0200")[0]
 >>> tasks = shot.get_tasks()
