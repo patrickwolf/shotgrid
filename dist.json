@@ -1,0 +1,9 @@
+{
+    "author": "ryan@rsg.io",
+    "targets": {
+        "lib": {
+            "source": "lib/shotgrid",
+            "destination": "{DEPLOY_ROOT}/lib/python/shotgrid"
+        }
+    }
+}
