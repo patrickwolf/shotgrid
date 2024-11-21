@@ -39,7 +39,7 @@ class Task(Entity):
         :return: list of Persons assigned to this task
         :raise: gaierror if can't connect to shotgrid.
         """
-        from person import Person
+        from shotgrid.person import Person
 
         if not deep:
             return [Person(self, r) for r in self.data.task_assignees]
