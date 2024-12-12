@@ -18,8 +18,9 @@ class Task(Entity):
         "code",
         "content",
         "name",
-        "task_assignees",
+        "step",
         "sg_status_list",
+        "task_assignees",
         "versions",
     ]
 
@@ -46,3 +47,15 @@ class Task(Entity):
 
         filters = [["id", "in", [p["id"] for p in self.data.task_assignees]]]
         return self.api().find_entities(Person.entity_type, filters)
+
+    def step(self):
+        """Returns the Task's Step object.
+
+        :return: Step object for this Task
+        :raise: gaierror if can't connect to shotgrid.
+        """
+        from shotgrid.step import Step
+
+        step = Step(self, self.data.step)
+        step.refetch()
+        return step

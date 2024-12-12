@@ -59,4 +59,6 @@ class Shot(Entity):
         """Returns the Sequence object for this Shot."""
         from shotgrid.sequence import Sequence
 
-        return Sequence(None, self.data.sg_sequence)
+        seq = Sequence(self.parent(), self.data.sg_sequence)
+        seq.refetch()
+        return seq

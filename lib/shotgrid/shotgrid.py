@@ -17,6 +17,7 @@ from shotgrid.playlist import Playlist
 from shotgrid.project import Project
 from shotgrid.sequence import Sequence
 from shotgrid.shot import Shot
+from shotgrid.step import Step
 from shotgrid.task import Task
 from shotgrid.version import Version
 
