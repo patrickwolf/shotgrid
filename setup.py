@@ -27,7 +27,7 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
-# -----------------------------------------------------------------------------
+#
 
 from os import path
 
@@ -39,7 +39,7 @@ with open(path.join(this_directory, "README.md")) as f:
 
 setup(
     name="shotgrid",
-    version="0.1.5",
+    version="0.2.0",
     description="Pythonic Shotgrid API wrapper",
     long_description=long_description,
     long_description_content_type="text/markdown",
@@ -50,7 +50,7 @@ setup(
     packages=find_packages("lib"),
     python_requires=">=3.8",
     install_requires=[
-        "envstack==0.6.2",
+        "envstack==0.7.1",
         "requests==2.32.3",
         "shotgun_api3",
     ],

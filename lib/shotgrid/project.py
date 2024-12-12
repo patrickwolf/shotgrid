@@ -1,4 +1,33 @@
 #!/usr/bin/env python
+#
+# Copyright (c) 2024, Ryan Galloway (ryan@rsgalloway.com)
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+#
+#  - Redistributions of source code must retain the above copyright notice,
+#    this list of conditions and the following disclaimer.
+#
+#  - Redistributions in binary form must reproduce the above copyright notice,
+#    this list of conditions and the following disclaimer in the documentation
+#    and/or other materials provided with the distribution.
+#
+#  - Neither the name of the software nor the names of its contributors
+#    may be used to endorse or promote products derived from this software
+#    without specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+# ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+# LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+# CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+# POSSIBILITY OF SUCH DAMAGE.
+#
 
 __doc__ = """
 Contains Project class.
@@ -170,4 +199,35 @@ class Project(Entity):
             return shots
 
         except socket.gaierror as e:
+            raise
+
+    def get_steps(self, short_name=None, filters=None, fields=None):
+        """Returns a list of pipeline steps for this project.
+
+        :param short_name: step short name
+        :param filters: list of filters to apply to the query
+        :param fields: which fields to return (optional)
+        :return: list of steps for this entity
+        :raise: gaierror if can't connect to shotgrid
+        """
+        from shotgrid.step import Step
+
+        fields = fields or Step.fields
+        params = []
+
+        if short_name is not None:
+            params.append(["short_name", "is", short_name])
+
+        if filters is not None:
+            params.extend(filters)
+
+        try:
+            results = self.api().find("Step", params, fields=fields)
+            steps = list()
+            for r in results:
+                steps.append(Step(self, data=r))
+            return steps
+
+        except socket.gaierror as err:
+            log.error(err.message)
             raise

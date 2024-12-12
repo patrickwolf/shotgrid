@@ -9,7 +9,7 @@ includes classes for each shotgrid entity type with convenience methods.
 The easiest way to install:
 
 ```bash
-$ pip install shotgrid
+$ pip install -U shotgrid
 ```
 
 Alternatively, use distman to dist to a deployment area using options defined
