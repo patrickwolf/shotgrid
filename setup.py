@@ -50,7 +50,7 @@ setup(
     packages=find_packages("lib"),
     python_requires=">=3.8",
     install_requires=[
-        "envstack==0.6.2",
+        "envstack==0.7.1",
         "requests==2.32.3",
         "shotgun_api3",
     ],
