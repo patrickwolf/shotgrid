@@ -200,3 +200,34 @@ class Project(Entity):
 
         except socket.gaierror as e:
             raise
+
+    def get_steps(self, short_name=None, filters=None, fields=None):
+        """Returns a list of pipeline steps for this project.
+
+        :param short_name: step short name
+        :param filters: list of filters to apply to the query
+        :param fields: which fields to return (optional)
+        :return: list of steps for this entity
+        :raise: gaierror if can't connect to shotgrid
+        """
+        from shotgrid.step import Step
+
+        fields = fields or Step.fields
+        params = []
+
+        if short_name is not None:
+            params.append(["short_name", "is", short_name])
+
+        if filters is not None:
+            params.extend(filters)
+
+        try:
+            results = self.api().find("Step", params, fields=fields)
+            steps = list()
+            for r in results:
+                steps.append(Step(self, data=r))
+            return steps
+
+        except socket.gaierror as err:
+            log.error(err.message)
+            raise

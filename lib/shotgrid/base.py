@@ -94,42 +94,13 @@ class Entity(object):
 
     def get_project(self):
         """Returns the project object for this entity."""
+        from shotgrid.project import Project
+
         parent = self
         while parent:
-            if parent.type() == "Project":
+            if parent.type() == Project.entity_type:
                 return parent
             parent = parent.parent()
-
-    def get_steps(self, short_name=None, filters=None, fields=None):
-        """Returns a list of steps.
-
-        :param short_name: step short name
-        :param filters: list of filters to apply to the query
-        :param fields: which fields to return (optional)
-        :return: list of steps for this entity
-        :raise: gaierror if can't connect to shotgrid
-        """
-        from shotgrid.step import Step
-
-        fields = fields or Step.fields
-        params = [["entity", "is", self.data]]
-
-        if short_name is not None:
-            params.append(["short_name", "is", short_name])
-
-        if filters is not None:
-            params.extend(filters)
-
-        try:
-            results = self.api().find("Step", params, fields=fields)
-            steps = list()
-            for r in results:
-                steps.append(Step(self, data=r))
-            return steps
-
-        except socket.gaierror as err:
-            log.error(err.message)
-            raise
 
     def get_tasks(self, content=None, filters=None, fields=None):
         """Returns a list of tasks.
@@ -140,10 +111,15 @@ class Entity(object):
         :return: list of tasks for this entity
         :raise: gaierror if can't connect to shotgrid
         """
+        from shotgrid.step import Step
         from shotgrid.task import Task
 
         fields = fields or Task.fields
-        params = [["entity", "is", self.data]]
+
+        if self.type() == Step.entity_type:
+            params = [["step", "is", self.data]]
+        else:
+            params = [["entity", "is", self.data]]
 
         if content is not None:
             params.append(["content", "is", content])
@@ -171,10 +147,15 @@ class Entity(object):
         :return: list of versions for this entity
         :raise: gaierror if can't connect to shotgrid.
         """
+        from shotgrid.step import Step
         from shotgrid.version import Version
 
         fields = fields or Version.fields
-        params = [["entity", "is", self.data]]
+
+        if self.type() == Step.entity_type:
+            params = [["sg_task.Task.step", "is", self.data]]
+        else:
+            params = [["entity", "is", self.data]]
 
         if code:
             params.append(["code", "is", code])
