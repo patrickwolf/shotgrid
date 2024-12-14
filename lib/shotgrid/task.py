@@ -65,8 +65,8 @@ class Task(Entity):
         If deep is False, returned data is shallow, only containing the
         following fields: id, name, and type.
 
-        :param deep: return default Person fields (default False)
-        :return: list of Persons assigned to this task
+        :param deep: return default Person fields (default False).
+        :return: list of Persons assigned to this task.
         :raise: gaierror if can't connect to shotgrid.
         """
         from shotgrid.person import Person
@@ -77,14 +77,21 @@ class Task(Entity):
         filters = [["id", "in", [p["id"] for p in self.data.task_assignees]]]
         return self.api().find_entities(Person.entity_type, filters)
 
-    def step(self):
+    def step(self, deep=False):
         """Returns the Task's Step object.
 
-        :return: Step object for this Task
+        If deep is False, returned data is shallow, only containing the
+        following fields: id, name, and type.
+
+        :param deep: return default Step fields (default False).
+        :return: Step object for this Task.
         :raise: gaierror if can't connect to shotgrid.
         """
         from shotgrid.step import Step
 
         step = Step(self, self.data.step)
-        step.refetch()
+
+        if deep:
+            step.refetch()
+
         return step

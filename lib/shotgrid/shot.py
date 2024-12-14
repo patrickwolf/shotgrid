@@ -84,10 +84,21 @@ class Shot(Entity):
         results = self.create("Version", data=data)
         return Version(self, results)
 
-    def sequence(self):
-        """Returns the Sequence object for this Shot."""
+    def sequence(self, deep=False):
+        """Returns the Sequence object for this Shot.
+
+        If deep is False, returned data is shallow, only containing the
+        following fields: id, name, and type.
+
+        :param deep: return default Step fields (default False).
+        :return: Sequence object for this Shot.
+        :raise: gaierror if can't connect to shotgrid.
+        """
         from shotgrid.sequence import Sequence
 
         seq = Sequence(self.parent(), self.data.sg_sequence)
-        seq.refetch()
+
+        if deep:
+            seq.refetch()
+
         return seq
