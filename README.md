@@ -12,21 +12,18 @@ The easiest way to install:
 $ pip install -U shotgrid
 ```
 
-Alternatively, use distman to dist to a deployment area using options defined
-in the `dist.json`:
+Alternatively, use [distman](https://github.com/rsgalloway/distman) to dist to a
+deployment area using options defined in the `dist.json` file:
 
 ```bash
 $ distman [-d]
 ```
 
-Files and directories can be distributed from any folder or git repo containing
-a `dist.json` file.
-
 ## Configuration
 
 Default settings are stored in an [envstack](https://github.com/rsgalloway/envstack)
-.env file. They can be stored in the default stack, or in a namespaced `shotgrid.env`
-stack file to keep settings separate.
+environment stack file. They can be stored in the default stack, or in a
+namespaced `shotgrid.env` stack file to keep settings separate.
 
 Start by renaming or copying the `example_shotgrid.env` file:
 

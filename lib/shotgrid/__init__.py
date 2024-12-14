@@ -34,11 +34,16 @@ Shotgrid Python API wrapper.
 """
 
 __prog__ = "shotgrid"
-__version__ = "0.2.0"
+__version__ = "0.2.1"
 __author__ = "ryan@rsg.io"
 
-import envstack
+# init the envstack environment
+try:
+    import envstack
 
-envstack.init(__prog__)
+    envstack.init(__prog__)
+
+except Exception:
+    pass
 
 from .shotgrid import Shotgrid
