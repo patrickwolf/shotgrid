@@ -34,11 +34,22 @@ $ cp example_shotgrid.env shotgrid.env
 Then edit it's contents with the appropriate values:
 
 ```yaml
-LOG_LEVEL: INFO
 SG_SCRIPT_URL: https://example.shotgunstudio.com
 SG_SCRIPT_NAME: script_name
-SG_SCRIPT_KEY: XXXXXX
+SG_SCRIPT_KEY: XXXXXXXXXXXX
 ```
+
+#### Encrypted keys
+
+To use encrypted keys in the env file, see the encryption instructions on the
+envstack README [here](https://github.com/rsgalloway/envstack?tab=readme-ov-file#encryption). 
+
+```yaml
+SG_SCRIPT_KEY: !encrypt XXXXXXXXXXXX
+SG_SCRIPT_NAME: !encrypt XXXXXXXXXXXX
+```
+
+Using AES-GCM or Fernet encryption, keys can be safely stored.
 
 ## Usage
 
