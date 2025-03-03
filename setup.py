@@ -39,7 +39,7 @@ with open(path.join(this_directory, "README.md")) as f:
 
 setup(
     name="shotgrid",
-    version="0.2.1",
+    version="0.2.2",
     description="Pythonic Shotgrid API wrapper",
     long_description=long_description,
     long_description_content_type="text/markdown",
@@ -50,7 +50,7 @@ setup(
     packages=find_packages("lib"),
     python_requires=">=3.8",
     install_requires=[
-        "envstack==0.7.2",
+        "envstack>=0.8.3",
         "requests==2.32.3",
         "shotgun_api3",
     ],
