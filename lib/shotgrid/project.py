@@ -71,8 +71,18 @@ class Project(Entity):
         results = self.create("Asset", data=data)
         return Asset(self, results)
 
+    def create_delivery(self, title: str, **data):
+        """Creates a new Delivery entity.
+
+        :param title: Delivery title
+        :return: Delivery object
+        """
+        data.update({"title": title})
+        results = self.create("Delivery", data=data)
+        return Delivery(self, results)
+
     def create_playlist(self, code: str, versions: list, **data):
-        """Creates a new Playlist that lives on this sequence.
+        """Creates a new Playlist entity.
 
         :param code: Playlist code
         :param versions: list of Versions to add to Playlist
@@ -133,7 +143,7 @@ class Project(Entity):
 
         :param title: delivery title
         :param fields: which fields to return (optional)
-        :return: list of Playlists
+        :return: list of Deliveries
         """
 
         fields = fields or Delivery.fields
