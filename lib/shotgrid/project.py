@@ -38,6 +38,7 @@ import socket
 from shotgrid.asset import Asset
 from shotgrid.base import Entity
 from shotgrid.logger import log
+from shotgrid.delivery import Delivery
 from shotgrid.playlist import Playlist
 from shotgrid.sequence import Sequence
 from shotgrid.shot import Shot
@@ -127,10 +128,34 @@ class Project(Entity):
         except socket.gaierror as e:
             raise
 
+    def get_deliveries(self, title: str = None, fields: list = None):
+        """Returns a list of deliveries from shotgrid for this project.
+
+        :param title: delivery title
+        :param fields: which fields to return (optional)
+        :return: list of Playlists
+        """
+
+        fields = fields or Delivery.fields
+        params = [["project", "is", self.data]]
+
+        if title is not None:
+            params.append(["title", "is", title])
+
+        try:
+            results = self.api().find("Delivery", params, fields=fields)
+            deliveries = list()
+            for r in results:
+                deliveries.append(Delivery(self, data=r))
+            return deliveries
+
+        except socket.gaierror as e:
+            raise
+
     def get_playlists(self, code: str = None, fields: list = None):
         """Returns a list of playlists from shotgrid for this project.
 
-        :param code: sequence code
+        :param code: playlist code
         :param fields: which fields to return (optional)
         :return: list of Playlists
         """
