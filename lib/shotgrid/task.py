@@ -59,7 +59,7 @@ class Task(Entity):
     def __repr__(self):
         return '<{0} "{1}">'.format(self.__class__.__name__, self.data.content)
 
-    def get_assignees(self, deep=False):
+    def get_assignees(self, deep: bool = False):
         """Returns a list of Person objects from shotgrid.
 
         If deep is False, returned data is shallow, only containing the
@@ -77,7 +77,7 @@ class Task(Entity):
         filters = [["id", "in", [p["id"] for p in self.data.task_assignees]]]
         return self.api().find_entities(Person.entity_type, filters)
 
-    def step(self, deep=False):
+    def step(self, deep: bool = False):
         """Returns the Task's Step object.
 
         If deep is False, returned data is shallow, only containing the

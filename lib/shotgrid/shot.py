@@ -58,7 +58,7 @@ class Shot(Entity):
     def __repr__(self):
         return '<{0} "{1}">'.format(self.__class__.__name__, self.data.code)
 
-    def create_task(self, content, **data):
+    def create_task(self, content: str, **data):
         """Creates a new Task with this shot as the parent.
 
         :param content: task name
@@ -71,7 +71,7 @@ class Shot(Entity):
         results = self.create("Task", data=data)
         return Task(self, results)
 
-    def create_version(self, code, task, **data):
+    def create_version(self, code: str, task: dict, **data):
         """Creates a new Version with this shot as the parent.
 
         :param code: version name
@@ -84,7 +84,7 @@ class Shot(Entity):
         results = self.create("Version", data=data)
         return Version(self, results)
 
-    def sequence(self, deep=False):
+    def sequence(self, deep: bool = False):
         """Returns the Sequence object for this Shot.
 
         If deep is False, returned data is shallow, only containing the

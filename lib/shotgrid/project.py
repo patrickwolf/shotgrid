@@ -60,7 +60,7 @@ class Project(Entity):
     def __init__(self, *args, **kwargs):
         super(Project, self).__init__(*args, **kwargs)
 
-    def create_asset(self, code, **data):
+    def create_asset(self, code: str, **data):
         """Creates a new Asset entity.
 
         :param code: asset code
@@ -70,7 +70,7 @@ class Project(Entity):
         results = self.create("Asset", data=data)
         return Asset(self, results)
 
-    def create_playlist(self, code, versions, **data):
+    def create_playlist(self, code: str, versions: list, **data):
         """Creates a new Playlist that lives on this sequence.
 
         :param code: Playlist code
@@ -81,7 +81,7 @@ class Project(Entity):
         results = self.create("Playlist", data=data)
         return Playlist(self, results)
 
-    def create_sequence(self, code, **data):
+    def create_sequence(self, code: str, **data):
         """Creates a new sequence.
 
         :param code: sequence code
@@ -91,7 +91,7 @@ class Project(Entity):
         results = self.create("Sequence", data=data)
         return Sequence(self, results)
 
-    def create_shot(self, code, sequence, **data):
+    def create_shot(self, code: str, sequence: object, **data):
         """Creates a new Shot.
 
         :param code: shot code
@@ -102,7 +102,7 @@ class Project(Entity):
         results = self.create("Shot", data=data)
         return Shot(self, results)
 
-    def get_assets(self, code=None, fields=None):
+    def get_assets(self, code: str = None, fields: list = None):
         """Returns a list of assets from shotgrid for this project.
 
         :param code: asset code
@@ -127,7 +127,7 @@ class Project(Entity):
         except socket.gaierror as e:
             raise
 
-    def get_playlists(self, code=None, fields=None):
+    def get_playlists(self, code: str = None, fields: list = None):
         """Returns a list of playlists from shotgrid for this project.
 
         :param code: sequence code
@@ -151,7 +151,7 @@ class Project(Entity):
         except socket.gaierror as e:
             raise
 
-    def get_sequences(self, code=None, fields=None):
+    def get_sequences(self, code: str = None, fields: list = None):
         """Returns a list of sequences from shotgrid for this project.
 
         :param code: sequence code
@@ -176,7 +176,7 @@ class Project(Entity):
         except socket.gaierror as e:
             raise
 
-    def get_shots(self, code=None, fields=None):
+    def get_shots(self, code: str = None, fields: list = None):
         """Returns a list of shots from shotgrid for this project.
 
         :param code: shot code
@@ -201,7 +201,9 @@ class Project(Entity):
         except socket.gaierror as e:
             raise
 
-    def get_steps(self, short_name=None, filters=None, fields=None):
+    def get_steps(
+        self, short_name: str = None, filters: list = None, fields: list = None
+    ):
         """Returns a list of pipeline steps for this project.
 
         :param short_name: step short name

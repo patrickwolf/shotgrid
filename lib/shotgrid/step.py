@@ -57,7 +57,7 @@ class Step(Entity):
     def __repr__(self):
         return '<{0} "{1}">'.format(self.__class__.__name__, self.data.short_name)
 
-    def create_task(self, content, **data):
+    def create_task(self, content: str, **data):
         """Creates a new Task with this shot as the parent.
 
         :param content: task name

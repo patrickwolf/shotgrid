@@ -66,7 +66,7 @@ class Playlist(Entity):
             versions=[v.data for v in versions], update_mode={"versions": "add"}
         )
 
-    def get_versions(self, code=None, filters=None, fields=None):
+    def get_versions(self, code: str = None, filters: list = None, fields: list = None):
         """Gets a list of versions for this playlist.
 
         :param code: sg version code
@@ -93,7 +93,7 @@ class Playlist(Entity):
 
         return versions
 
-    def remove_versions(self, versions):
+    def remove_versions(self, versions: list):
         """Removes a list of Versions from this playlist.
 
         :param versions: list of Versions

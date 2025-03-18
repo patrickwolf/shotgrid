@@ -61,7 +61,7 @@ class Shotgrid(shotgun_api3.Shotgun):
     Shotgrid wrapper base class. Managed connection and starting point for
     all operations, e.g. ::
 
-        >>> sg = Shotgrid(name=<name>, apikey=<key>)
+        >>> sg = Shotgrid()
         >>> projects = sg.get_projects()
 
     Shotgrid entity hierarchy:
@@ -79,19 +79,28 @@ class Shotgrid(shotgun_api3.Shotgun):
 
     def __init__(
         self,
-        url=config.SG_SCRIPT_URL,
-        name=config.SG_SCRIPT_NAME,
-        apikey=config.SG_SCRIPT_KEY,
+        base_url: str = config.SG_SCRIPT_URL,
+        script_name: str = config.SG_SCRIPT_NAME,
+        api_key: str = config.SG_SCRIPT_KEY,
+        **kwargs,
     ):
-        super(Shotgrid, self).__init__(url, name, apikey)
-        self.url = url
-        self.name = name
-        self.apikey = apikey
+        """
+        Creates a new Shotgrid object.
+
+        :param base_url: shotgrid base url
+        :param script_name: shotgrid script name
+        :param api_key: shotgrid api key
+        :param kwargs: additional keyword arguments
+        """
+        super(Shotgrid, self).__init__(base_url, script_name, api_key, **kwargs)
+        self.url = base_url
+        self.name = script_name
+        self.apikey = api_key
 
     def __repr__(self):
         return '<{0} "{1}">'.format(self.__class__.__name__, self.name)
 
-    def create_project(self, name, **data):
+    def create_project(self, name: str, **data):
         """Creates and returns a new Project entity.
 
         :param name: project name
@@ -101,7 +110,7 @@ class Shotgrid(shotgun_api3.Shotgun):
         results = self.create("Project", data=data)
         return Project(self, results)
 
-    def find_entities(self, entity_type, filters):
+    def find_entities(self, entity_type: str, filters: list):
         """Returns entities matching an entity type and filter list, e.g.
         find an asset with id 1440 ::
 
@@ -120,7 +129,7 @@ class Shotgrid(shotgun_api3.Shotgun):
             entities.append(entity_class(self, data=r))
         return entities
 
-    def get_projects(self, name=None, fields=None):
+    def get_projects(self, name: str = None, fields: list = None):
         """Returns a list of Project entities.
 
         :param name: project name
@@ -147,6 +156,7 @@ class Shotgrid(shotgun_api3.Shotgun):
             raise
 
     def parent(self):
+        """Returns the parent entity of this entity."""
         return None
 
     def type(self):

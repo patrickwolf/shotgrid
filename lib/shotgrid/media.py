@@ -41,7 +41,7 @@ from shotgrid.base import Entity
 from shotgrid.logger import log
 
 
-def stream_download(filename, url, chunk=4096):
+def stream_download(filename: str, url: str, chunk: int = 4096):
     """downloads/streams a file in chunks."""
 
     from contextlib import closing
@@ -66,7 +66,7 @@ class Movie(Entity):
     def __repr__(self):
         return '<{0} "{1}">'.format(self.__class__.__name__, self.data.name)
 
-    def download(self, folder=None):
+    def download(self, folder: str = None):
         """Downloads this movie to a specified folder on disk.
 
         :param folder: which folder to write the movie to
