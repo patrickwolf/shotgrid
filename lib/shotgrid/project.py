@@ -38,6 +38,7 @@ import socket
 from shotgrid.asset import Asset
 from shotgrid.base import Entity
 from shotgrid.logger import log
+from shotgrid.delivery import Delivery
 from shotgrid.playlist import Playlist
 from shotgrid.sequence import Sequence
 from shotgrid.shot import Shot
@@ -60,7 +61,7 @@ class Project(Entity):
     def __init__(self, *args, **kwargs):
         super(Project, self).__init__(*args, **kwargs)
 
-    def create_asset(self, code, **data):
+    def create_asset(self, code: str, **data):
         """Creates a new Asset entity.
 
         :param code: asset code
@@ -70,8 +71,18 @@ class Project(Entity):
         results = self.create("Asset", data=data)
         return Asset(self, results)
 
-    def create_playlist(self, code, versions, **data):
-        """Creates a new Playlist that lives on this sequence.
+    def create_delivery(self, title: str, **data):
+        """Creates a new Delivery entity.
+
+        :param title: Delivery title
+        :return: Delivery object
+        """
+        data.update({"title": title})
+        results = self.create("Delivery", data=data)
+        return Delivery(self, results)
+
+    def create_playlist(self, code: str, versions: list, **data):
+        """Creates a new Playlist entity.
 
         :param code: Playlist code
         :param versions: list of Versions to add to Playlist
@@ -81,7 +92,7 @@ class Project(Entity):
         results = self.create("Playlist", data=data)
         return Playlist(self, results)
 
-    def create_sequence(self, code, **data):
+    def create_sequence(self, code: str, **data):
         """Creates a new sequence.
 
         :param code: sequence code
@@ -91,7 +102,7 @@ class Project(Entity):
         results = self.create("Sequence", data=data)
         return Sequence(self, results)
 
-    def create_shot(self, code, sequence, **data):
+    def create_shot(self, code: str, sequence: object, **data):
         """Creates a new Shot.
 
         :param code: shot code
@@ -102,7 +113,7 @@ class Project(Entity):
         results = self.create("Shot", data=data)
         return Shot(self, results)
 
-    def get_assets(self, code=None, fields=None):
+    def get_assets(self, code: str = None, fields: list = None):
         """Returns a list of assets from shotgrid for this project.
 
         :param code: asset code
@@ -127,10 +138,34 @@ class Project(Entity):
         except socket.gaierror as e:
             raise
 
-    def get_playlists(self, code=None, fields=None):
+    def get_deliveries(self, title: str = None, fields: list = None):
+        """Returns a list of deliveries from shotgrid for this project.
+
+        :param title: delivery title
+        :param fields: which fields to return (optional)
+        :return: list of Deliveries
+        """
+
+        fields = fields or Delivery.fields
+        params = [["project", "is", self.data]]
+
+        if title is not None:
+            params.append(["title", "is", title])
+
+        try:
+            results = self.api().find("Delivery", params, fields=fields)
+            deliveries = list()
+            for r in results:
+                deliveries.append(Delivery(self, data=r))
+            return deliveries
+
+        except socket.gaierror as e:
+            raise
+
+    def get_playlists(self, code: str = None, fields: list = None):
         """Returns a list of playlists from shotgrid for this project.
 
-        :param code: sequence code
+        :param code: playlist code
         :param fields: which fields to return (optional)
         :return: list of Playlists
         """
@@ -151,7 +186,7 @@ class Project(Entity):
         except socket.gaierror as e:
             raise
 
-    def get_sequences(self, code=None, fields=None):
+    def get_sequences(self, code: str = None, fields: list = None):
         """Returns a list of sequences from shotgrid for this project.
 
         :param code: sequence code
@@ -176,7 +211,7 @@ class Project(Entity):
         except socket.gaierror as e:
             raise
 
-    def get_shots(self, code=None, fields=None):
+    def get_shots(self, code: str = None, fields: list = None):
         """Returns a list of shots from shotgrid for this project.
 
         :param code: shot code
@@ -201,7 +236,9 @@ class Project(Entity):
         except socket.gaierror as e:
             raise
 
-    def get_steps(self, short_name=None, filters=None, fields=None):
+    def get_steps(
+        self, short_name: str = None, filters: list = None, fields: list = None
+    ):
         """Returns a list of pipeline steps for this project.
 
         :param short_name: step short name

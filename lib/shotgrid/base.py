@@ -54,7 +54,7 @@ class Entity(object):
         "sg_status_list",
     ]
 
-    def __init__(self, parent, data=None):
+    def __init__(self, parent: object, data: dict = None):
         """
         :param parent: shotgrid parent object
         :param data: data dictionary
@@ -67,7 +67,7 @@ class Entity(object):
     def __repr__(self):
         return '<{0} "{1}">'.format(self.__class__.__name__, self.data.name)
 
-    def _set_data(self, data):
+    def _set_data(self, data: dict):
         """Sets data.
 
         :param data: data dictionary
@@ -82,7 +82,7 @@ class Entity(object):
                 return parent
             parent = parent.parent()
 
-    def create(self, entity_type, data):
+    def create(self, entity_type: str, data: dict):
         """Creates a new entity in shotgrid."""
         data.update({"project": self.get_project().data})
         return self.api().create(entity_type, data)
@@ -102,7 +102,7 @@ class Entity(object):
                 return parent
             parent = parent.parent()
 
-    def get_tasks(self, content=None, filters=None, fields=None):
+    def get_tasks(self, content: str = None, filters: list = None, fields: list = None):
         """Returns a list of tasks.
 
         :param content: sg task name
@@ -138,7 +138,7 @@ class Entity(object):
             log.error(err.message)
             raise
 
-    def get_versions(self, code=None, filters=None, fields=None):
+    def get_versions(self, code: str = None, filters: list = None, fields: list = None):
         """Returns a list of versions from shotgrid given a shot and task dictionary.
 
         :param code: sg version code
@@ -200,7 +200,7 @@ class Entity(object):
         """
         return self._parent
 
-    def refetch(self, fields=None):
+    def refetch(self, fields: list = None):
         """Refetches entity data from shotgrid. Used to update an entity
         after its been updated from another source, or to fetch additional
         fields.
@@ -220,7 +220,7 @@ class Entity(object):
         """Restores previously deleted entity from shotgrid."""
         return self.parent().revive(self.type(), self.id())
 
-    def update(self, update_mode=None, **data):
+    def update(self, update_mode: dict = None, **data):
         """Update this entity with new data kwargs.
 
         :param update_mode: for multi entity fields, dict of entity_type to operation,

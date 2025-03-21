@@ -55,7 +55,7 @@ class Asset(Entity):
     def __repr__(self):
         return '<{0} "{1}">'.format(self.__class__.__name__, self.data.code)
 
-    def create_task(self, content, **data):
+    def create_task(self, content: str, **data):
         """Creates a new Task with this asset as the parent.
 
         :param content: task name
@@ -68,11 +68,11 @@ class Asset(Entity):
         results = self.create("Task", data=data)
         return Task(self, results)
 
-    def create_version(self, code, task, **data):
+    def create_version(self, code: str, task: dict, **data):
         """Creates a new Version with this asset as the parent.
 
         :param code: version name
-        :param data: version data dictionary
+        :param task: version data dictionary
         :return: new Version object
         """
         from shotgrid.version import Version

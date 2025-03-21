@@ -61,7 +61,7 @@ class Sequence(Entity):
     def __repr__(self):
         return '<{0} "{1}">'.format(self.__class__.__name__, self.data.code)
 
-    def create_shot(self, code, **data):
+    def create_shot(self, code: str, **data):
         """Creates a new Shot under this Sequence.
 
         :param code: shot code
@@ -74,7 +74,7 @@ class Sequence(Entity):
         results = self.create("Shot", data=data)
         return Shot(self, results)
 
-    def get_shots(self, code=None, fields=None):
+    def get_shots(self, code: str = None, fields: list = None):
         """Gets a list of shots from shotgrid for this project.
 
         :param code: shot code
