@@ -36,7 +36,9 @@ Contains dotdictify class.
 
 class dotdictify(dict):
     """
-    life = {
+    from shotgrid.dotdictify import dotdictify
+
+        life = {
         'bigBang': {
             'stars': {
                 'planets': {}
@@ -44,11 +46,11 @@ class dotdictify(dict):
        }
     }
 
-    >>> life = dotdictify(life)
-    >>> print life.bigBang.stars.planets
-    >>> life.bigBang.stars.planets.earth = {'singleCellLife': 1}
-    >>> print life.bigBang.stars.planets
-    >>> print life.bigBang.stars.planets.earth.singleCellLife
+    life = dotdictify(life)
+    print ( life.bigBang.stars.planets)
+    life.bigBang.stars.planets.earth = {'singleCellLife': 1}
+    print( life.bigBang.stars.planets)
+    print( life.bigBang.stars.planets.earth.singleCellLife)
     """
 
     marker = object()
