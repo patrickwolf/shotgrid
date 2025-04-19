@@ -45,6 +45,7 @@ class Shot(Entity):
     fields = [
         "id",
         "code",
+        "link",
         "description",
         "assets",
         "sg_sequence",
@@ -55,8 +56,8 @@ class Shot(Entity):
     def __init__(self, *args, **kwargs):
         super(Shot, self).__init__(*args, **kwargs)
 
-    def __repr__(self):
-        return '<{0} "{1}">'.format(self.__class__.__name__, self.data.code)
+    # def __repr__(self):
+    #     return '<{0} "{1}">'.format(self.__class__.__name__, self.data.code)
 
     def create_task(self, content: str, **data):
         """Creates a new Task with this shot as the parent.
@@ -84,6 +85,19 @@ class Shot(Entity):
         results = self.create("Version", data=data)
         return Version(self, results)
 
+    def create_published_file(self, code: str, version: dict, **data):
+        """Creates a new Version with this shot as the parent.
+
+        :param code: version name
+        :param data: version data dictionary
+        :return: new Version object
+        """
+        from shotgrid.publishedfile import PublishedFile
+
+        data.update({"code": code, "entity": self.data, "version": version.data})
+        results = self.create(PublishedFile.entity_type, data=data)
+        return PublishedFile(self, results)
+    
     def sequence(self, deep: bool = False):
         """Returns the Sequence object for this Shot.
 
@@ -102,3 +116,12 @@ class Shot(Entity):
             seq.refetch()
 
         return seq
+    
+    def get_published_files(self, code: str = None, id:int=None, filters: list = None, fields: list = None):
+        params = ["entity", "is", self.data]
+
+        if filters is not None:
+            params.extend(filters)
+
+        return self._get_published_files(code=code, id=id, filters=params, fields=fields)
+

@@ -65,7 +65,8 @@ class Entity(object):
             self.entity_type = self.__class__.__name__
 
     def __repr__(self):
-        return '<{0} "{1}">'.format(self.__class__.__name__, self.data.name)
+        #return '<{0} "{1}">'.format(self.__class__.__name__, self.data.name)
+        return '<{0} "{1}" ({2})>'.format(self.__class__.__name__, self.data.code,self.data.id)
 
     def _set_data(self, data: dict):
         """Sets data.
@@ -173,6 +174,30 @@ class Entity(object):
         except socket.gaierror as err:
             log.error(err.message)
             raise
+
+    def _get_published_files(self, code: str = None, id:int=None, filters: list = None, fields: list = None):
+        """Returns a list of versions from shotgrid given a shot and task dictionary.
+
+        :param code: sg version code
+        :param filters: additional filters (optional)
+        :param fields: which fields to return (optional)
+        :return: list of versions for this entity
+        :raise: gaierror if can't connect to shotgrid.
+        """
+        from shotgrid.publishedfile  import PublishedFile
+
+        fields = fields or PublishedFile.fields
+
+        params = []
+
+        if code:
+            params.append(["code", "is", code])
+
+        if filters is not None:
+            params.extend(filters)
+
+        return self._get_entities(PublishedFile.entity_type, code, id, params, fields)
+
 
     def get_thumb(self):
         """Returns entity thumbnail."""

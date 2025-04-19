@@ -54,11 +54,30 @@ class Version(Entity):
     def __init__(self, *args, **kwargs):
         super(Version, self).__init__(*args, **kwargs)
 
-    def __repr__(self):
-        return '<{0} "{1}">'.format(self.__class__.__name__, self.data.code)
-
     @property
     def movie(self):
         from shotgrid.media import Movie
 
         return Movie(self, self.data.sg_uploaded_movie)
+
+    def create_published_file(self, code: str, **data):
+        """Creates a new Version with this shot as the parent.
+
+        :param code: version name
+        :param data: version data dictionary
+        :return: new Version object
+        """
+        from shotgrid.publishedfile import PublishedFile
+
+        data.update({"code": code, "entity": self.parent().data, "version": self.data})
+        results = self.create(PublishedFile.entity_type, data=data)
+        return PublishedFile(self, results)
+
+
+    def get_published_files(self, code: str = None, id:int=None, filters: list = None, fields: list = None):
+        params = [["version", "is", self.data]]
+
+        if filters is not None:
+            params.extend(filters)
+
+        return self._get_published_files(code=code, id=id, filters=params, fields=fields)

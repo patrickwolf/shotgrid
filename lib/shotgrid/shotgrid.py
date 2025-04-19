@@ -49,6 +49,7 @@ from shotgrid.shot import Shot
 from shotgrid.step import Step
 from shotgrid.task import Task
 from shotgrid.version import Version
+from shotgrid.publishedfile import PublishedFile
 
 # maps entity type string to wrapper class
 entity_type_class_map = dict(
@@ -110,7 +111,7 @@ class Shotgrid(shotgun_api3.Shotgun):
         results = self.create("Project", data=data)
         return Project(self, results)
 
-    def find_entities(self, entity_type: str, filters: list):
+    def find_entities(self, entity_type: str, filters: list, fields: list = None, limit: int = 0):
         """Returns entities matching an entity type and filter list, e.g.
         find an asset with id 1440 ::
 
@@ -123,7 +124,8 @@ class Shotgrid(shotgun_api3.Shotgun):
         """
         entities = []
         entity_class = entity_type_class_map.get(entity_type)
-        results = self.find(entity_type, filters, fields=entity_class.fields)
+        fields = fields or entity_class.fields
+        results = self.find(entity_type, filters, fields=fields,limit=limit)
         for r in results:
             entity_type = r.get("type")
             entities.append(entity_class(self, data=r))
