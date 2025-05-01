@@ -56,8 +56,9 @@ entity_type_class_map = dict(
     [(cls.entity_type, cls) for cls in Entity.__subclasses__()]
 )
 
+from fpt_api import FPT
 
-class Shotgrid(shotgun_api3.Shotgun):
+class Shotgrid(FPT):
     """
     Shotgrid wrapper base class. Managed connection and starting point for
     all operations, e.g. ::
@@ -164,3 +165,38 @@ class Shotgrid(shotgun_api3.Shotgun):
     def type(self):
         """Returns shotgrid entity type as str."""
         return self.__class__.__name__
+
+
+    def retire_recent_entities(self, entity_types:list, project_id:int, hours:int=1):
+        """Retires entities that have not been modified in the last n hours.
+
+        :param entity_types: list of entity types to retire
+        :param hours: number of hours to check for modification
+        """
+        if not entity_types:
+            raise ValueError("entity_types must not be empty")
+        if not project_id:
+            raise ValueError("project_id must not be empty")
+        if not isinstance(entity_types, list):
+            raise ValueError("entity_types must be a list")
+        if not isinstance(project_id, int):
+            raise ValueError("project_id must be an int")
+
+        filters = [
+            ['project', 'is', {'type': 'Project', 'id': project_id}],
+            ['created_at', 'in_last', hours, 'HOUR'],
+        ]
+
+        items = []
+        for entity_type in entity_types:
+            items.extend(self.find(entity_type, filters, ['name', 'code','content']))
+
+        log.info(f"Retiring {len(items)} entities of type {entity_types} that have been created in the last {hours} hours")
+        log.info(items)
+
+        batch_data = []
+        for item in items:
+            batch_data.append({"request_type": "delete", 
+                               "entity_type": item["type"],
+                                 "entity_id": item["id"]})
+        self.batch(batch_data)

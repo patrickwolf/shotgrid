@@ -60,7 +60,7 @@ class Version(Entity):
 
         return Movie(self, self.data.sg_uploaded_movie)
 
-    def create_published_file(self, code: str, **data):
+    def create_published_file(self, code: str, task:dict, **data):
         """Creates a new Version with this shot as the parent.
 
         :param code: version name
@@ -69,7 +69,7 @@ class Version(Entity):
         """
         from shotgrid.publishedfile import PublishedFile
 
-        data.update({"code": code, "entity": self.parent().data, "version": self.data})
+        data.update({"code": code, "entity": self.parent().data, "version": self.data,"task": task})
         results = self.create(PublishedFile.entity_type, data=data)
         return PublishedFile(self, results)
 

@@ -56,8 +56,13 @@ class Task(Entity):
     def __init__(self, *args, **kwargs):
         super(Task, self).__init__(*args, **kwargs)
 
-    def __repr__(self):
-        return '<{0} "{1}">'.format(self.__class__.__name__, self.data.content)
+    # def __repr__(self):
+    #     return '<{0} "{1}" ({2})>'.format(self.__class__.__name__, self.data.content, self.data.id)
+
+    @property
+    def uname(self):
+        """Returns the name of the version."""
+        return self.data.content
 
     def get_assignees(self, deep: bool = False):
         """Returns a list of Person objects from shotgrid.

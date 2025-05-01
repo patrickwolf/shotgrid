@@ -25,5 +25,5 @@ class PublishedFile(Entity):
     def __init__(self, *args, **kwargs):
         super(PublishedFile, self).__init__(*args, **kwargs)
 
-    def __repr__(self):
-        return '<{0} "{1}">'.format(self.__class__.__name__, self.data.code)
+    # def __repr__(self):
+    #     return '<{0} "{1}">'.format(self.__class__.__name__, self.data.code)

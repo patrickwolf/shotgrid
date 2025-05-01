@@ -66,7 +66,17 @@ class Entity(object):
 
     def __repr__(self):
         #return '<{0} "{1}">'.format(self.__class__.__name__, self.data.name)
-        return '<{0} "{1}" ({2})>'.format(self.__class__.__name__, self.data.code,self.data.id)
+        return '<{0} "{1}" ({2})>'.format(self.__class__.__name__, self.uname ,self.data.id)
+    
+    @property
+    def uname(self):
+        """Returns the name of the version."""
+        return self.data.code if self.data.code else self.data.name
+
+    @property
+    def uname_id(self):
+        """Returns the name of the version."""
+        return '{0} ({1})'.format(self.uname, self.data.id)
 
     def _set_data(self, data: dict):
         """Sets data.
@@ -198,6 +208,43 @@ class Entity(object):
 
         return self._get_entities(PublishedFile.entity_type, code, id, params, fields)
 
+    def _get_entities(self, type:str, code: str = None, id:int=None, filters = None, fields: list = None, limit =0):
+        """Returns a list of shots from shotgrid for this project.
+
+        :param code: shot code
+        :param fields: which fields to return (optional)
+        :return: shot list from shotgrid for given project
+        :raise: socket.gaierror if can't connect to shotgrid
+        """
+
+        fields = fields or self.fields
+
+        if code is not None:
+            filters.append(["code", "is", code])
+
+        if id is not None:
+            filters.append(["id", "is", id])
+
+        try:
+            return self.api().find_entities(type, filters, fields=fields, limit=limit)
+
+        except socket.gaierror as e:
+            raise
+
+    def _get_entity(self, type:str, code: str = None, id:int=None, filters = None,fields: list = None) :
+        """Returns a shot from shotgrid for this project.
+
+        :param id: shot id
+        :return: shot object from shotgrid for given project
+        :raise: socket.gaierror if can't connect to shotgrid
+        """
+        entities = self._get_entities(type, code,id, filters, fields, limit=2)
+        if len(entities) == 0:
+            return None
+        if len(entities) == 1:
+            return entities[0]
+        elif len(entities) > 1:
+            raise ValueError(f"Multiple {type} found with code {code}")
 
     def get_thumb(self):
         """Returns entity thumbnail."""
@@ -257,3 +304,9 @@ class Entity(object):
         )
         self.data.update(data)
         return result
+
+    @property
+    def data_id(self):
+        """Returns a simplified dict of data useful to use the entity in a filter"""
+        minimal_fields = ['id', 'code', 'name','content', 'type']
+        return {key: getattr(self.data, key) for key in minimal_fields if getattr(self.data, key)}

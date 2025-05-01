@@ -211,7 +211,8 @@ class Project(Entity):
         except socket.gaierror as e:
             raise
 
-    def get_shots(self, code: str = None, fields: list = None):
+
+    def get_shots(self, code: str = None, id:int=None, fields: list = None) -> list[Shot]:
         """Returns a list of shots from shotgrid for this project.
 
         :param code: shot code
@@ -226,6 +227,9 @@ class Project(Entity):
         if code is not None:
             params.append(["code", "is", code])
 
+        if id is not None:
+            params.append(["id", "is", id])
+
         try:
             results = self.api().find("Shot", params, fields=fields)
             shots = list()
@@ -235,6 +239,30 @@ class Project(Entity):
 
         except socket.gaierror as e:
             raise
+
+    def get_shots2(self, code: str = None, id:int=None, fields: list = None, limit=0) -> list[Shot]:
+        """Returns a list of shots from shotgrid for this project.
+
+        :param code: shot code
+        :param fields: which fields to return (optional)
+        :return: shot list from shotgrid for given project
+        :raise: socket.gaierror if can't connect to shotgrid
+        """
+        filters = [["project", "is", self.data]]
+
+        return super()._get_entities("Shot", code, id, filters=filters, fields=fields, limit=limit)
+
+
+    def get_shot2(self, code: str = None, id:int=None, fields: list = None) -> Shot:
+        """Returns a shot from shotgrid for this project.
+
+        :param id: shot id
+        :return: shot object from shotgrid for given project
+        :raise: socket.gaierror if can't connect to shotgrid
+        """
+        filters = [["project", "is", self.data]]
+
+        return super()._get_entity("Shot", code, id, filters, fields)
 
     def get_steps(
         self, short_name: str = None, filters: list = None, fields: list = None

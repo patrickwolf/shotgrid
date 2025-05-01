@@ -118,7 +118,7 @@ class Shot(Entity):
         return seq
     
     def get_published_files(self, code: str = None, id:int=None, filters: list = None, fields: list = None):
-        params = ["entity", "is", self.data]
+        params = [["entity", "is", self.data]]
 
         if filters is not None:
             params.extend(filters)
