@@ -44,6 +44,7 @@ class Entity(object):
 
     # must be set on the subclass
     entity_type = None
+    auto_tag = {'type': 'Tag', 'id': 341}
 
     # default fields to fetch, override on subclasses
     fields = [
@@ -80,11 +81,18 @@ class Entity(object):
 
     def _set_data(self, data: dict):
         """Sets data.
-
         :param data: data dictionary
         """
         self.data = dotdictify(data)
 
+    @property
+    def data_id(self):
+        """Returns a simplified dict of data useful to use the entity in a filter"""
+        minimal_fields = ['id', 'code', 'name','content', 'type']
+        val = {key: getattr(self.data, key) for key in minimal_fields if getattr(self.data, key)}
+        val['uname'] = self.uname_id
+        return val
+    
     def api(self):
         """Returns Shotgrid api object."""
         parent = self.parent()
@@ -96,6 +104,9 @@ class Entity(object):
     def create(self, entity_type: str, data: dict):
         """Creates a new entity in shotgrid."""
         data.update({"project": self.get_project().data})
+        # Set Pipeline Tag
+        if self.auto_tag:
+            data.update({'tags': [self.auto_tag]})
         return self.api().create(entity_type, data)
 
     def delete(self):
@@ -299,14 +310,17 @@ class Entity(object):
             e.g. {'versions': 'add'}. Default is 'set'.
         :param data: field key/value pairs to update
         """
+
+        if self.auto_tag:
+            data.update({'tags': [self.auto_tag]})
+            if not update_mode:
+                update_mode = {'tags': 'add'}
+            else: 
+                update_mode.update({'tags': 'add'})
+
         result = self.api().update(
             self.type(), self.id(), data, multi_entity_update_modes=update_mode
         )
         self.data.update(data)
         return result
 
-    @property
-    def data_id(self):
-        """Returns a simplified dict of data useful to use the entity in a filter"""
-        minimal_fields = ['id', 'code', 'name','content', 'type']
-        return {key: getattr(self.data, key) for key in minimal_fields if getattr(self.data, key)}

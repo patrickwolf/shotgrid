@@ -80,3 +80,11 @@ class Asset(Entity):
         data.update({"code": code, "entity": self.data, "sg_task": task.data})
         results = self.create("Version", data=data)
         return Version(self, results)
+
+    def get_published_files(self, code: str = None, id:int=None, filters: list = None, fields: list = None):
+        params = [["entity", "is", self.data]]
+
+        if filters is not None:
+            params.extend(filters)
+
+        return self._get_published_files(code=code, id=id, filters=params, fields=fields)
