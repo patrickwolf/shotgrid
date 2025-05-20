@@ -46,14 +46,15 @@ class Asset(Entity):
         "id",
         "description",
         "code",
+        "tags",
         "sg_status_list",
     ]
 
     def __init__(self, *args, **kwargs):
         super(Asset, self).__init__(*args, **kwargs)
 
-    def __repr__(self):
-        return '<{0} "{1}">'.format(self.__class__.__name__, self.data.code)
+    # def __repr__(self):
+    #     return '<{0} "{1}">'.format(self.__class__.__name__, self.data.code)
 
     def create_task(self, content: str, **data):
         """Creates a new Task with this asset as the parent.

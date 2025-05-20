@@ -48,6 +48,7 @@ class Task(Entity):
         "content",
         "name",
         "step",
+        "tags",
         "sg_status_list",
         "task_assignees",
         "versions",
@@ -61,8 +62,15 @@ class Task(Entity):
 
     @property
     def uname(self):
-        """Returns the name of the version."""
         return self.data.content
+
+    @property
+    def code(self):
+        return self.data.content
+
+    @code.setter
+    def code(self, value):
+        self.data.content = value
 
     def get_assignees(self, deep: bool = False):
         """Returns a list of Person objects from shotgrid.

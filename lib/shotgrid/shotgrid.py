@@ -47,6 +47,7 @@ from shotgrid.playlist import Playlist
 from shotgrid.project import Project
 from shotgrid.sequence import Sequence
 from shotgrid.shot import Shot
+from shotgrid.ingest import Ingest
 from shotgrid.step import Step
 from shotgrid.task import Task
 from shotgrid.version import Version
@@ -208,6 +209,8 @@ class Shotgrid(FPT):
         filters = [
             ['project', 'is', {'type': 'Project', 'id': project_id}],
             ['created_at', 'in_last', hours, 'HOUR'],
+            ['tags','is',Entity.auto_tag],
+            ['created_by', 'is', {'id': 93, 'name': 'Yeti 1.0', 'type': 'ApiUser'}],
         ]
 
         items = []
@@ -274,7 +277,7 @@ class Shotgrid(FPT):
         
         entity_type = entity_data.get("type")
         entity_id = entity_data.get("id")
-        entity_code = entity_data.get("code")
+        entity_code = entity_data.get("code") if entity_data.get("code") else entity_data.get(codes[entity_type])
         
         # Validate entity type
         if entity_type not in codes:
@@ -312,33 +315,21 @@ class Shotgrid(FPT):
         entity = None
         get_method = getattr(link, retrieval_methods.get(entity_type), None)
         if get_method:
-            entities = get_method(entity_code)
-            if not entities:
-                return None
-            if retrieval == self.RetrievalMethod.FIRST:
-                return entities[0]
-            elif retrieval == self.RetrievalMethod.ALL:
-                return entities
-            elif retrieval == self.RetrievalMethod.UNIQUE:
-                if len(entities) > 1:
-                    raise ValueError(f"More than one entity found for {entity_type} with code {entity_code}")
-                return entities[0]
-        
-        # Create if needed and requested
-        if entity:
-            return entity
+            entity = get_method(entity_code)
 
+        if entity:
+            if retrieval == self.RetrievalMethod.FIRST:
+                return entity[0]
+            elif retrieval == self.RetrievalMethod.ALL:
+                return entity
+            elif retrieval == self.RetrievalMethod.UNIQUE:
+                if len(entity) > 1:
+                    raise ValueError(f"More than one entity found for {entity_type} with code {entity_code}")
+                return entity[0]
+        
         if missing == self.MissingStrategy.CREATE:
-            entity = self.create_entity(entity_type, link, data)
+            return self.create_entity(entity_type, link, entity_data)
         elif missing == self.MissingStrategy.RAISE:
             raise ValueError(f"Entity not found: {entity_type} with code {entity_code}")
         elif missing == self.MissingStrategy.IGNORE:
             return None
-
-# def get_one(list: list[Entity]) -> Entity:
-#     if not list:
-#         return None
-#     elif len(list) == 1:
-#         return list[0]
-#     elif len(list) > 1:
-#         raise ValueError("More than one entity found")

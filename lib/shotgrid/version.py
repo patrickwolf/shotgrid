@@ -46,6 +46,7 @@ class Version(Entity):
         "id",
         "description",
         "code",
+        "tags",
         "sg_path_to_frames",
         "sg_status_list",
         "sg_uploaded_movie",

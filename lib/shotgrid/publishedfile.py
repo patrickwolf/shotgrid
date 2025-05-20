@@ -17,6 +17,7 @@ class PublishedFile(Entity):
         "code",
         "name",
         "entity",
+        "tags",
         "published_file_type",
         "version",
         "version_number",

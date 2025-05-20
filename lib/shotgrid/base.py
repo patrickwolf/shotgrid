@@ -52,6 +52,7 @@ class Entity(object):
         "description",
         "code",
         "name",
+        "tags",
         "sg_status_list",
     ]
 
@@ -71,8 +72,15 @@ class Entity(object):
     
     @property
     def uname(self):
-        """Returns the name of the version."""
         return self.data.code if self.data.code else self.data.name
+
+    @property
+    def code(self):
+        return self.data.code
+
+    @code.setter
+    def code(self, value):
+        self.data.code = value
 
     @property
     def uname_id(self):

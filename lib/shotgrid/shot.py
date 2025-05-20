@@ -48,6 +48,7 @@ class Shot(Entity):
         "link",
         "description",
         "assets",
+        "tags",
         "sg_sequence",
         "sg_status_list",
         "versions",
