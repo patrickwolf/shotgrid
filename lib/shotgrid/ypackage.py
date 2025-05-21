@@ -6,10 +6,10 @@ from shotgrid.base import Entity
 from shotgrid.logger import log
 
 
-class Ingest(Entity):
+class YPackage(Entity):
     """Shotgrid Ingest entity."""
 
-    entity_type = "CustomEntity06"
+    entity_type = "CustomEntity07"
 
     fields = [
         "id",

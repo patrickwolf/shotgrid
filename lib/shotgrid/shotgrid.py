@@ -35,9 +35,10 @@ Contains wrapper class for shotgrid api.
 
 import socket
 from enum import Enum, auto
-
+import functools
 import shotgun_api3
 
+import shotgrid.helpers as helpers
 from shotgrid import config
 from shotgrid.asset import Asset
 from shotgrid.base import Entity
@@ -47,11 +48,12 @@ from shotgrid.playlist import Playlist
 from shotgrid.project import Project
 from shotgrid.sequence import Sequence
 from shotgrid.shot import Shot
-from shotgrid.ingest import Ingest
 from shotgrid.step import Step
 from shotgrid.task import Task
 from shotgrid.version import Version
 from shotgrid.publishedfile import PublishedFile
+from shotgrid.ymedia import YMedia
+from shotgrid.ypackage import YPackage
 
 # maps entity type string to wrapper class
 entity_type_class_map = dict(
@@ -246,15 +248,15 @@ class Shotgrid(FPT):
         entity_class = entity_type_class_map[entity_type]
         return entity_class(parent, data or {})
 
-    def get_or_create_entity(self, link, entity_data, 
+    def get_or_create_entity(self, entity_data:dict, parent=None,
                          retrieval: RetrievalMethod = RetrievalMethod.UNIQUE, 
                          missing: MissingStrategy = MissingStrategy.RAISE) -> Entity:
         """
         Retrieve or create a Shotgrid entity.
         
         Args:
-            link: Parent entity (Shot or Asset) in Shotgrid entity object format
             entity_data: Dict with entity data in format {"type": "entity_type", "id": 123} or {"type": "entity_type", "code": "name"}
+            parent: Parent entity (Shot or Asset) in Shotgrid entity object format
             retrieval: Method for retrieving entities (FIRST, ALL, UNIQUE)
             missing: Strategy for handling missing entities (CREATE, IGNORE, RAISE)
             
@@ -263,6 +265,8 @@ class Shotgrid(FPT):
         """
         if not entity_data:
             return None
+        if not parent:
+            parent = self
         
         # Code field mapping for different entity types
         codes = {
@@ -295,7 +299,7 @@ class Shotgrid(FPT):
 
         # If we have an ID, we can create the entity directly
         if entity_id:
-            return self.create_entity(entity_type, link, entity_data)
+            return self.create_entity(entity_type, parent, entity_data)
         
         # Map entity types to their retrieval methods
         retrieval_methods = {
@@ -313,7 +317,7 @@ class Shotgrid(FPT):
         # find_entities
         # Get entity based on type
         entity = None
-        get_method = getattr(link, retrieval_methods.get(entity_type), None)
+        get_method = getattr(parent, retrieval_methods.get(entity_type), None)
         if get_method:
             entity = get_method(entity_code)
 
@@ -328,8 +332,35 @@ class Shotgrid(FPT):
                 return entity[0]
         
         if missing == self.MissingStrategy.CREATE:
-            return self.create_entity(entity_type, link, entity_data)
+            return self.create_entity(entity_type, parent, entity_data)
         elif missing == self.MissingStrategy.RAISE:
             raise ValueError(f"Entity not found: {entity_type} with code {entity_code}")
         elif missing == self.MissingStrategy.IGNORE:
             return None
+
+
+    @functools.lru_cache(maxsize=None) 
+    def get_lookup(self,entity_type:str, key_field:str="code", fields:tuple=None, separator:str=None):
+        """
+        Get a dictionary of items from Shotgrid using a specified key field.
+        Args:   
+        entity_type (str): The type of entity to query.
+        key_field (str): The field to use as the key in the resulting dictionary.
+        fields (list): Optional list of fields to include in the result.
+        Returns:
+        dict: A dictionary where the keys are the values of the specified key field
+            and the values are the corresponding Shotgrid items.
+        """
+        if not fields:
+            fields = [key_field]
+        else:
+            fields = list(fields)
+        if key_field not in fields:
+            fields.append(key_field)
+
+        filters = [
+        [key_field,"is_not", ""]
+        ]
+        items = self.find(entity_type, filters,fields=fields)
+        result = helpers.list_of_dicts_to_dict(items, key=key_field,separator=separator)
+        return result

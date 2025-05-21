@@ -88,7 +88,10 @@ class Project(Entity):
         :param versions: list of Versions to add to Playlist
         :return: Playlist object
         """
-        data.update({"code": code, "versions": [v.data for v in versions]})
+        # Normalize versions to ensure we have data objects
+        normalized_versions = [v.data if hasattr(v, 'data') else v for v in versions]
+            
+        data.update({"code": code, "versions": normalized_versions})
         results = self.create("Playlist", data=data)
         return Playlist(self, results)
 
@@ -293,6 +296,33 @@ class Project(Entity):
                 steps.append(Step(self, data=r))
             return steps
 
+        except socket.gaierror as err:
+            log.error(err.message)
+            raise
+
+    def get_group_lookup(self):
+        """Returns a dictionary of group names and ids.
+
+        :return: dictionary of group names and ids
+        """
+        try:
+            return self.api().get_lookup("Group", "sg_vendor_code")
+        except socket.gaierror as err:
+            log.error(err.message)
+            raise
+    
+    def get_published_file_type_lookup(self):
+        """Returns a dictionary of published file types and ids.
+
+        :return: dictionary of published file types and ids
+        """
+        fields = ("sg_typegroup","sg_extensions","sg_autoupload","code")
+        result = self.api().get_lookup("PublishedFileType", 
+            "sg_extensions",fields=fields,separator=",")
+
+        try:
+            return self.api().get_lookup("PublishedFileType", 
+            "sg_extensions",fields=fields,separator=",")
         except socket.gaierror as err:
             log.error(err.message)
             raise
