@@ -32,10 +32,8 @@
 __doc__ = """
 Contains Asset base class.
 """
-
 from shotgrid.base import Entity
 from shotgrid.logger import log
-
 
 class Asset(Entity):
     """Shotgrid Asset entity."""

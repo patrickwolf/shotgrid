@@ -105,6 +105,16 @@ class Project(Entity):
         results = self.create("Sequence", data=data)
         return Sequence(self, results)
 
+    def create_sequence(self, code: str, **data):
+        """Creates a new sequence.
+
+        :param code: sequence code
+        :return: Sequence object
+        """
+        data.update({"code": code})
+        results = self.create("Sequence", data=data)
+        return Sequence(self, results)
+
     def create_shot(self, code: str, sequence: object, **data):
         """Creates a new Shot.
 

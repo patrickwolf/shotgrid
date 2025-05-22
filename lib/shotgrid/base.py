@@ -34,7 +34,7 @@ Contains the entity base class.
 """
 
 import socket
-
+from enum import Enum, auto
 from shotgrid.dotdictify import dotdictify
 from shotgrid.logger import log
 
@@ -108,6 +108,21 @@ class Entity(object):
             if parent.type() == "Shotgrid":
                 return parent
             parent = parent.parent()
+
+    def save(self):
+        """Saves the current entity in shotgrid."""
+        if self.id():
+            raise ValueError("Cannot save entity with id, use update() instead.")
+
+        data = self.data.copy()
+        del data['id']
+        data.update({"project": self.get_project().data})
+        # Set Pipeline Tag
+        if self.auto_tag:
+            data.update({'tags': [self.auto_tag]})
+        data = self.api().create(self.entity_type, data)
+        self._set_data(data)
+        return self
 
     def create(self, entity_type: str, data: dict):
         """Creates a new entity in shotgrid."""
@@ -331,4 +346,118 @@ class Entity(object):
         )
         self.data.update(data)
         return result
+
+    class RetrievalMethod(str, Enum):
+        """Methods for retrieving entities from Shotgrid."""
+        FIRST = "first"
+        ALL = "all" 
+        UNIQUE = "unique"
+    
+    class MissingStrategy(str, Enum):
+        """Strategies for handling missing entities."""
+        CREATE = "create"
+        IGNORE = "ignore"
+        RAISE = "raise"
+    
+    class EntityType(str, Enum):
+        """Supported Shotgrid entity types."""
+        PROJECT = "Project"
+        ASSET = "Asset"
+        SEQUENCE = "Sequence"
+        SHOT = "Shot"
+        TASK = "Task"
+        VERSION = "Version"
+        PUBLISHED_FILE = "PublishedFile"
+        PLAYLIST = "Playlist"
+
+    def load_entity(self, entity_data:dict, 
+                         retrieval: RetrievalMethod = RetrievalMethod.UNIQUE, 
+                         missing: MissingStrategy = MissingStrategy.RAISE) -> 'Entity':
+        """
+        Retrieve or create a Shotgrid entity.
+        
+        Args:
+            entity_data: Dict with entity data in format {"type": "entity_type", "id": 123} or {"type": "entity_type", "code": "name"}
+            parent: Parent entity (Shot or Asset) in Shotgrid entity object format
+            retrieval: Method for retrieving entities (FIRST, ALL, UNIQUE)
+            missing: Strategy for handling missing entities (CREATE, IGNORE, RAISE)
+            
+        Returns:
+            The retrieved or created entity, or None if not found and not created
+        """
+        if not entity_data:
+            return None
+        parent = self
+        
+        # Code field mapping for different entity types
+        codes = {
+            self.EntityType.PROJECT: "code",
+            self.EntityType.ASSET: "code", 
+            self.EntityType.SEQUENCE: "code", 
+            self.EntityType.SHOT: "code", 
+            self.EntityType.TASK: "content",
+            self.EntityType.VERSION: "code", 
+            self.EntityType.PUBLISHED_FILE: "code",
+            self.EntityType.PLAYLIST: "code",
+        }
+        
+        entity_type = entity_data.get("type")
+        entity_id = entity_data.get("id")
+        entity_code = entity_data.get("code") if entity_data.get("code") else entity_data.get(codes[entity_type])
+        
+        # Validate entity type
+        if entity_type not in codes:
+            raise ValueError(f"Unsupported entity type: {entity_type}")
+        
+        # No code or ID provided
+        if not entity_id and not entity_code:
+            return None
+        
+        # Prepare entity data with the correct field name
+        entity_data = entity_data.copy()
+        if "code" in entity_data:
+            del entity_data["code"]
+        entity_data[codes.get(entity_type)] = entity_code
+
+        # If we have an ID, we can create the entity directly
+        if entity_id:
+            return self.api().create_entity(entity_type, parent, entity_data)
+        
+        # Map entity types to their retrieval methods
+        retrieval_methods = {
+            "Project": "get_projects",
+            "Asset": "get_assets",
+            "Sequence": "get_sequences",
+            "Shot": "get_shots",
+            "Task": "get_tasks",
+            "Version": "get_versions",
+            "Playlist": "get_playlists",
+            "Delivery": "get_deliveries",
+            "PublishedFile": "get_published_files"
+        }
+        
+        # find_entities
+        # Get entity based on type
+        entity = None
+        get_method = getattr(parent, retrieval_methods.get(entity_type), None)
+        if get_method:
+            entity = get_method(entity_code)
+
+        if entity:
+            if retrieval == self.RetrievalMethod.FIRST:
+                return entity[0]
+            elif retrieval == self.RetrievalMethod.ALL:
+                return entity
+            elif retrieval == self.RetrievalMethod.UNIQUE:
+                if len(entity) > 1:
+                    raise ValueError(f"More than one entity found for {entity_type} with code {entity_code}")
+                return entity[0]
+        
+        if missing == self.MissingStrategy.CREATE:
+            return self.api().create_entity(entity_type, parent, entity_data)
+        elif missing == self.MissingStrategy.RAISE:
+            raise ValueError(f"Entity not found: {entity_type} with code {entity_code}")
+        elif missing == self.MissingStrategy.IGNORE:
+            return None
+
 

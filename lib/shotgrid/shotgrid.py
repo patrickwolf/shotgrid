@@ -82,28 +82,7 @@ class Shotgrid(FPT):
                             `- Person
 
     """
-    
-    class RetrievalMethod(str, Enum):
-        """Methods for retrieving entities from Shotgrid."""
-        FIRST = "first"
-        ALL = "all" 
-        UNIQUE = "unique"
-    
-    class MissingStrategy(str, Enum):
-        """Strategies for handling missing entities."""
-        CREATE = "create"
-        IGNORE = "ignore"
-        RAISE = "raise"
-    
-    class EntityType(str, Enum):
-        """Supported Shotgrid entity types."""
-        PROJECT = "Project"
-        ASSET = "Asset"
-        SEQUENCE = "Sequence"
-        SHOT = "Shot"
-        TASK = "Task"
-        VERSION = "Version"
-        PUBLISHED_FILE = "PublishedFile"
+
     
     def __init__(
         self,
@@ -229,115 +208,6 @@ class Shotgrid(FPT):
                                  "entity_id": item["id"]})
         self.batch(batch_data)
 
-    @classmethod
-    def create_entity(cls, entity_type, parent, data=None):
-        """
-        Create a new entity of the specified type.
-        
-        Args:
-            entity_type: String name of the entity type (e.g., "Version", "Task")
-            parent: Parent entity to associate with the new entity
-            data: Dictionary of initial data for the entity
-            
-        Returns:
-            A new instance of the specified entity type
-        """
-        if entity_type not in entity_type_class_map:
-            raise ValueError(f"Unsupported entity type: {entity_type}")
-        
-        entity_class = entity_type_class_map[entity_type]
-        return entity_class(parent, data or {})
-
-    def get_or_create_entity(self, entity_data:dict, parent=None,
-                         retrieval: RetrievalMethod = RetrievalMethod.UNIQUE, 
-                         missing: MissingStrategy = MissingStrategy.RAISE) -> Entity:
-        """
-        Retrieve or create a Shotgrid entity.
-        
-        Args:
-            entity_data: Dict with entity data in format {"type": "entity_type", "id": 123} or {"type": "entity_type", "code": "name"}
-            parent: Parent entity (Shot or Asset) in Shotgrid entity object format
-            retrieval: Method for retrieving entities (FIRST, ALL, UNIQUE)
-            missing: Strategy for handling missing entities (CREATE, IGNORE, RAISE)
-            
-        Returns:
-            The retrieved or created entity, or None if not found and not created
-        """
-        if not entity_data:
-            return None
-        if not parent:
-            parent = self
-        
-        # Code field mapping for different entity types
-        codes = {
-            self.EntityType.PROJECT: "code",
-            self.EntityType.ASSET: "code", 
-            self.EntityType.SEQUENCE: "code", 
-            self.EntityType.SHOT: "code", 
-            self.EntityType.TASK: "content",
-            self.EntityType.VERSION: "code", 
-            self.EntityType.PUBLISHED_FILE: "code"
-        }
-        
-        entity_type = entity_data.get("type")
-        entity_id = entity_data.get("id")
-        entity_code = entity_data.get("code") if entity_data.get("code") else entity_data.get(codes[entity_type])
-        
-        # Validate entity type
-        if entity_type not in codes:
-            raise ValueError(f"Unsupported entity type: {entity_type}")
-        
-        # No code or ID provided
-        if not entity_id and not entity_code:
-            return None
-        
-        # Prepare entity data with the correct field name
-        entity_data = entity_data.copy()
-        if "code" in entity_data:
-            del entity_data["code"]
-        entity_data[codes.get(entity_type)] = entity_code
-
-        # If we have an ID, we can create the entity directly
-        if entity_id:
-            return self.create_entity(entity_type, parent, entity_data)
-        
-        # Map entity types to their retrieval methods
-        retrieval_methods = {
-            "Project": "get_projects",
-            "Asset": "get_assets",
-            "Sequence": "get_sequences",
-            "Shot": "get_shots",
-            "Task": "get_tasks",
-            "Version": "get_versions",
-            "Playlist": "get_playlists",
-            "Delivery": "get_deliveries",
-            "PublishedFile": "get_published_files"
-        }
-        
-        # find_entities
-        # Get entity based on type
-        entity = None
-        get_method = getattr(parent, retrieval_methods.get(entity_type), None)
-        if get_method:
-            entity = get_method(entity_code)
-
-        if entity:
-            if retrieval == self.RetrievalMethod.FIRST:
-                return entity[0]
-            elif retrieval == self.RetrievalMethod.ALL:
-                return entity
-            elif retrieval == self.RetrievalMethod.UNIQUE:
-                if len(entity) > 1:
-                    raise ValueError(f"More than one entity found for {entity_type} with code {entity_code}")
-                return entity[0]
-        
-        if missing == self.MissingStrategy.CREATE:
-            return self.create_entity(entity_type, parent, entity_data)
-        elif missing == self.MissingStrategy.RAISE:
-            raise ValueError(f"Entity not found: {entity_type} with code {entity_code}")
-        elif missing == self.MissingStrategy.IGNORE:
-            return None
-
 
     @functools.lru_cache(maxsize=None) 
     def get_lookup(self,entity_type:str, key_field:str="code", fields:tuple=None, separator:str=None):
@@ -364,3 +234,22 @@ class Shotgrid(FPT):
         items = self.find(entity_type, filters,fields=fields)
         result = helpers.list_of_dicts_to_dict(items, key=key_field,separator=separator)
         return result
+
+    @classmethod
+    def create_entity(cls, entity_type, parent, data=None):
+        """
+        Create a new entity of the specified type.
+        
+        Args:
+            entity_type: String name of the entity type (e.g., "Version", "Task")
+            parent: Parent entity to associate with the new entity
+            data: Dictionary of initial data for the entity
+            
+        Returns:
+            A new instance of the specified entity type
+        """
+        if entity_type not in entity_type_class_map:
+            raise ValueError(f"Unsupported entity type: {entity_type}")
+        
+        entity_class = entity_type_class_map[entity_type]
+        return entity_class(parent, data or {})
