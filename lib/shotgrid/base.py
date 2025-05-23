@@ -337,6 +337,8 @@ class Entity(object):
             e.g. {'versions': 'add'}. Default is 'set'.
         :param data: field key/value pairs to update
         """
+        if not data:
+            return self.data
 
         if self.auto_tag:
             data.update({'tags': [self.auto_tag]})
