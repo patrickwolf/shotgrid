@@ -42,6 +42,8 @@ from shotgrid.delivery import Delivery
 from shotgrid.playlist import Playlist
 from shotgrid.sequence import Sequence
 from shotgrid.shot import Shot
+from shotgrid.ymedia import YMedia
+from shotgrid.ypackage import YPackage
 
 
 class Project(Entity):
@@ -89,8 +91,8 @@ class Project(Entity):
         :return: Playlist object
         """
         # Normalize versions to ensure we have data objects
-        normalized_versions = [v.data if hasattr(v, 'data') else v for v in versions]
-            
+        normalized_versions = [v.data if hasattr(v, 'data') else v for v in versions if v]
+
         data.update({"code": code, "versions": normalized_versions})
         results = self.create("Playlist", data=data)
         return Playlist(self, results)
@@ -199,6 +201,56 @@ class Project(Entity):
         except socket.gaierror as e:
             raise
 
+    def get_ymedia(self, code: str = None, fields: list = None):
+        """Returns a list of sequences from shotgrid for this project.
+
+        :param code: sequence code
+        :param fields: which fields to return (optional)
+        :return: sequence list from shotgrid for this project
+        :raise: socket.gaierror if can't connect to shotgrid
+        """
+
+        fields = fields or YMedia.fields
+        params = [["project", "is", self.data]]
+
+        if code is not None:
+            params.append(["code", "is", code])
+
+        try:
+            results = self.api().find(YMedia.entity_type, params, fields=fields)
+            seqs = list()
+            for r in results:
+                seqs.append(YMedia(self, data=r))
+            return seqs
+
+        except socket.gaierror as e:
+            raise
+
+    def get_ypackage(self, code: str = None, fields: list = None):
+        """Returns a list of sequences from shotgrid for this project.
+
+        :param code: sequence code
+        :param fields: which fields to return (optional)
+        :return: sequence list from shotgrid for this project
+        :raise: socket.gaierror if can't connect to shotgrid
+        """
+
+        fields = fields or YPackage.fields
+        params = [["project", "is", self.data]]
+
+        if code is not None:
+            params.append(["code", "is", code])
+
+        try:
+            results = self.api().find(YPackage.entity_type, params, fields=fields)
+            seqs = list()
+            for r in results:
+                seqs.append(YPackage(self, data=r))
+            return seqs
+
+        except socket.gaierror as e:
+            raise
+
     def get_sequences(self, code: str = None, fields: list = None):
         """Returns a list of sequences from shotgrid for this project.
 
@@ -224,8 +276,7 @@ class Project(Entity):
         except socket.gaierror as e:
             raise
 
-
-    def get_shots(self, code: str = None, id:int=None, fields: list = None) -> list[Shot]:
+    def get_shots(self, code: str = None, id: int = None, fields: list = None) -> list[Shot]:
         """Returns a list of shots from shotgrid for this project.
 
         :param code: shot code
@@ -253,7 +304,7 @@ class Project(Entity):
         except socket.gaierror as e:
             raise
 
-    def get_shots2(self, code: str = None, id:int=None, fields: list = None, limit=0) -> list[Shot]:
+    def get_shots2(self, code: str = None, id: int = None, fields: list = None, limit=0) -> list[Shot]:
         """Returns a list of shots from shotgrid for this project.
 
         :param code: shot code
@@ -265,8 +316,7 @@ class Project(Entity):
 
         return super()._get_entities("Shot", code, id, filters=filters, fields=fields, limit=limit)
 
-
-    def get_shot2(self, code: str = None, id:int=None, fields: list = None) -> Shot:
+    def get_shot2(self, code: str = None, id: int = None, fields: list = None) -> Shot:
         """Returns a shot from shotgrid for this project.
 
         :param id: shot id
@@ -320,19 +370,19 @@ class Project(Entity):
         except socket.gaierror as err:
             log.error(err.message)
             raise
-    
+
     def get_published_file_type_lookup(self):
         """Returns a dictionary of published file types and ids.
 
         :return: dictionary of published file types and ids
         """
-        fields = ("sg_typegroup","sg_extensions","sg_autoupload","code")
-        result = self.api().get_lookup("PublishedFileType", 
-            "sg_extensions",fields=fields,separator=",")
+        fields = ("sg_typegroup", "sg_extensions", "sg_autoupload", "code")
+        result = self.api().get_lookup("PublishedFileType",
+                                       "sg_extensions", fields=fields, separator=",")
 
         try:
-            return self.api().get_lookup("PublishedFileType", 
-            "sg_extensions",fields=fields,separator=",")
+            return self.api().get_lookup("PublishedFileType",
+                                         "sg_extensions", fields=fields, separator=",")
         except socket.gaierror as err:
             log.error(err.message)
             raise

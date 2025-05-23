@@ -16,7 +16,14 @@ class YPackage(Entity):
         "description",
         "code",
         "sg_status_list",
+        "sg_yaction",
+        "sg_ynotes",
+        "sg_yissue"
+        "tags"
     ]
+
+    # User Administrated in Shotgrid
+    fields_user = ["sg_status_list", "sg_yaction"]
 
     def __init__(self, *args, **kwargs):
         super(YPackage, self).__init__(*args, **kwargs)
