@@ -18,7 +18,7 @@ class YPackage(Entity):
         "sg_status_list",
         "sg_yaction",
         "sg_ynotes",
-        "sg_yissue"
+        "sg_yissue",
         "tags"
     ]
 
