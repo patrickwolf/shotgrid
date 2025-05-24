@@ -504,7 +504,7 @@ class Entity(object):
         current_data = dict(self.data)
         snapshot_data = dict(self._snapshot_data)
 
-        diff_result = helpers.dict_diff(current_data, snapshot_data)
+        diff_result = helpers.dict_diff(snapshot_data, current_data)
 
         return diff_result
 
