@@ -45,6 +45,7 @@ from shotgrid.asset import Asset
 from shotgrid.base import Entity
 from shotgrid.logger import log
 from shotgrid.person import Person
+from shotgrid.group import Group
 from shotgrid.playlist import Playlist
 from shotgrid.project import Project
 from shotgrid.sequence import Sequence
