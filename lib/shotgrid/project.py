@@ -177,6 +177,46 @@ class Project(Entity):
         except socket.gaierror as e:
             raise
 
+    def get_persons(self, code: str = None, fields: list = None):
+
+        from shotgrid.person import Person
+
+        fields = fields or Person.fields
+        params = []
+
+        if code is not None:
+            params.append(["name", "is", code])
+
+        try:
+            results = self.api().find("Person", params, fields=fields)
+            person = list()
+            for r in results:
+                person.append(Person(self, data=r))
+            return person
+
+        except socket.gaierror as e:
+            raise
+
+    def get_groups(self, code: str = None, fields: list = None):
+
+        from shotgrid.group import Group
+
+        fields = fields or Group.fields
+        params = []
+
+        if code is not None:
+            params.append(["code", "is", code])
+
+        try:
+            results = self.api().find("Group", params, fields=fields)
+            group = list()
+            for r in results:
+                group.append(Group(self, data=r))
+            return group
+
+        except socket.gaierror as e:
+            raise
+
     def get_playlists(self, code: str = None, fields: list = None):
         """Returns a list of playlists from shotgrid for this project.
 

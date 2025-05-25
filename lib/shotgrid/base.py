@@ -379,6 +379,8 @@ class Entity(object):
         PLAYLIST = "Playlist"
         YPACKAGE = "CustomEntity07"
         YMEDIA = "CustomEntity06"
+        GROUP = "Group"
+        PERSON = "Person"
 
     def load_entity(self, entity_data: dict,
                     retrieval: RetrievalMethod = RetrievalMethod.UNIQUE,
@@ -411,6 +413,8 @@ class Entity(object):
             self.EntityType.PLAYLIST: "code",
             self.EntityType.YPACKAGE: "code",
             self.EntityType.YMEDIA: "code",
+            self.EntityType.GROUP: "code",
+            self.EntityType.PERSON: "name",
         }
 
         entity_type = entity_data.get("type")
@@ -438,6 +442,8 @@ class Entity(object):
         # Map entity types to their retrieval methods
         retrieval_methods = {
             "Project": "get_projects",
+            "Person": "get_persons",
+            "Group": "get_groups",
             "Asset": "get_assets",
             "Sequence": "get_sequences",
             "Shot": "get_shots",
@@ -468,6 +474,8 @@ class Entity(object):
                 return entity[0]
 
         if missing == self.MissingStrategy.CREATE:
+            # having the type in here will make it not possible to save later
+            # entity_data.pop("type")
             return self.api().create_entity(entity_type, parent, entity_data)
         elif missing == self.MissingStrategy.RAISE:
             raise ValueError(f"Entity not found: {entity_type} with code {entity_code}")

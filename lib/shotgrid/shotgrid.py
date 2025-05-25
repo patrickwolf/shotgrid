@@ -29,6 +29,7 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #
 
+from fpt_api import FPT
 __doc__ = """
 Contains wrapper class for shotgrid api.
 """
@@ -60,7 +61,6 @@ entity_type_class_map = dict(
     [(cls.entity_type, cls) for cls in Entity.__subclasses__()]
 )
 
-from fpt_api import FPT
 
 class Shotgrid(FPT):
     """
@@ -83,7 +83,6 @@ class Shotgrid(FPT):
 
     """
 
-    
     def __init__(
         self,
         base_url: str = config.SG_SCRIPT_URL,
@@ -131,7 +130,7 @@ class Shotgrid(FPT):
         entities = []
         entity_class = entity_type_class_map.get(entity_type)
         fields = fields or entity_class.fields
-        results = self.find(entity_type, filters, fields=fields,limit=limit)
+        results = self.find(entity_type, filters, fields=fields, limit=limit)
         for r in results:
             entity_type = r.get("type")
             entities.append(entity_class(self, data=r))
@@ -171,8 +170,7 @@ class Shotgrid(FPT):
         """Returns shotgrid entity type as str."""
         return self.__class__.__name__
 
-
-    def retire_recent_entities(self, entity_types:list, project_id:int, hours:int=1):
+    def retire_recent_entities(self, entity_types: list, project_id: int, hours: int = 1):
         """Retires entities that have not been modified in the last n hours.
 
         :param entity_types: list of entity types to retire
@@ -190,27 +188,26 @@ class Shotgrid(FPT):
         filters = [
             ['project', 'is', {'type': 'Project', 'id': project_id}],
             ['created_at', 'in_last', hours, 'HOUR'],
-            ['tags','is',Entity.auto_tag],
+            ['tags', 'is', Entity.auto_tag],
             ['created_by', 'is', {'id': 93, 'name': 'Yeti 1.0', 'type': 'ApiUser'}],
         ]
 
         items = []
         for entity_type in entity_types:
-            items.extend(self.find(entity_type, filters, ['name', 'code','content']))
+            items.extend(self.find(entity_type, filters, ['name', 'code', 'content']))
 
         log.info(f"Retiring {len(items)} entities of type {entity_types} that have been created in the last {hours} hours")
         log.info(items)
 
         batch_data = []
         for item in items:
-            batch_data.append({"request_type": "delete", 
+            batch_data.append({"request_type": "delete",
                                "entity_type": item["type"],
-                                 "entity_id": item["id"]})
+                               "entity_id": item["id"]})
         self.batch(batch_data)
 
-
-    @functools.lru_cache(maxsize=None) 
-    def get_lookup(self,entity_type:str, key_field:str="code", fields:tuple=None, separator:str=None):
+    @functools.lru_cache(maxsize=None)
+    def get_lookup(self, entity_type: str, key_field: str = "code", fields: tuple = None, separator: str = None):
         """
         Get a dictionary of items from Shotgrid using a specified key field.
         Args:   
@@ -229,27 +226,58 @@ class Shotgrid(FPT):
             fields.append(key_field)
 
         filters = [
-        [key_field,"is_not", ""]
+            [key_field, "is_not", ""]
         ]
-        items = self.find(entity_type, filters,fields=fields)
-        result = helpers.list_of_dicts_to_dict(items, key=key_field,separator=separator)
+        items = self.find(entity_type, filters, fields=fields)
+        result = helpers.list_of_dicts_to_dict(items, key=key_field, separator=separator)
         return result
 
     @classmethod
     def create_entity(cls, entity_type, parent, data=None):
         """
         Create a new entity of the specified type.
-        
+
         Args:
             entity_type: String name of the entity type (e.g., "Version", "Task")
             parent: Parent entity to associate with the new entity
             data: Dictionary of initial data for the entity
-            
+
         Returns:
             A new instance of the specified entity type
         """
         if entity_type not in entity_type_class_map:
             raise ValueError(f"Unsupported entity type: {entity_type}")
-        
+
         entity_class = entity_type_class_map[entity_type]
         return entity_class(parent, data or {})
+
+    @staticmethod
+    def has_id(entity: Entity) -> bool:
+        """
+        Check if the given entity has an 'id' attribute.
+
+        Args:
+            entity: The entity to check
+
+        Returns:
+            bool: True if the entity has an 'id', False otherwise
+        """
+        return entity is not None and hasattr(entity, 'id') and entity.id() is not None
+
+    @staticmethod
+    def data_id(entity: Entity) -> dict:
+        """
+        Check if the given entity has an 'id' attribute.
+
+        Args:
+            entity: The entity to check
+
+        Returns:
+            bool: True if the entity has an 'id', False otherwise
+        """
+        if entity is None:
+            return None
+        elif isinstance(entity, dict) and entity.get('id', None):
+            return entity
+        elif isinstance(entity, Entity) and entity.id():
+            return entity.data_id
