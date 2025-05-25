@@ -498,7 +498,7 @@ class Entity(object):
             ValueError: If no snapshot has been taken
         """
         if self._snapshot_data is None:
-            raise ValueError("No snapshot available. Call snapshot() first.")
+            return self.data
 
         # Convert dotdictify objects to regular dictionaries for comparison
         current_data = dict(self.data)

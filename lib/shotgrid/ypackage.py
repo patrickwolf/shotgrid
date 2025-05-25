@@ -17,6 +17,7 @@ class YPackage(Entity):
         "code",
         "sg_status_list",
         "sg_yaction",
+        "sg_playlist",
         "sg_ynotes",
         "sg_yissue",
         "tags"

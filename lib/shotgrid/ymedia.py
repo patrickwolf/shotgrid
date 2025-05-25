@@ -25,7 +25,6 @@ class YMedia(Entity):
         "sg_version",
         "sg_publishedfiletype",
         "sg_publishedfile",
-        "sg_playlist",
         "sg_ynotes",
         "sg_yaction",
         "sg_yissue"
