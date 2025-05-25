@@ -36,19 +36,25 @@ Contains dotdictify class.
 
 class dotdictify(dict):
     """
-    life = {
-        'bigBang': {
-            'stars': {
-                'planets': {}
-            }
-       }
-    }
+    Dot-accessible dictionary. Allows you to access dictionary keys as attributes.
 
-    >>> life = dotdictify(life)
-    >>> print life.bigBang.stars.planets
-    >>> life.bigBang.stars.planets.earth = {'singleCellLife': 1}
-    >>> print life.bigBang.stars.planets
-    >>> print life.bigBang.stars.planets.earth.singleCellLife
+        >>> life = {
+        ...     'bigBang': {
+        ...         'stars': {
+        ...             'planets': {}
+        ...         }
+        ...     }
+        ... }
+        >>> data = dotdictify(life)
+        >>> print(data.bigBang.stars.planets)
+        {}
+        >>> data.bigBang.stars.planets.earth = {'singleCellLife': 1}
+        >>> print(data.bigBang.stars.planets)
+        {'earth': {'singleCellLife': 1}}
+        >>> print(data.bigBang.stars.planets.earth.singleCellLife)
+        1
+        >>> print(data.bigBang.stars.planets.earth.foobar)
+        {}
     """
 
     marker = object()
