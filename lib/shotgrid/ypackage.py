@@ -23,7 +23,7 @@ class YPackage(Entity):
     ]
 
     # User Administrated in Shotgrid
-    fields_user = ["sg_status_list", "sg_yaction"]
+    # fields_user = ["sg_status_list", "sg_yaction"]
 
     def __init__(self, *args, **kwargs):
         super(YPackage, self).__init__(*args, **kwargs)

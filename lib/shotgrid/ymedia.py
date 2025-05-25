@@ -21,6 +21,7 @@ class YMedia(Entity):
         "sg_dstpath",
         "sg_link",
         "sg_task",
+        "sg_user",
         "sg_version",
         "sg_publishedfiletype",
         "sg_publishedfile",
@@ -31,7 +32,7 @@ class YMedia(Entity):
     ]
 
     # User Administrated in Shotgrid
-    fields_user = ["sg_status_list", "sg_link", "sg_yaction", "sg_user"]
+    # fields_user = ["sg_status_list", "sg_link", "sg_yaction", "sg_user"]
 
     def __init__(self, *args, **kwargs):
         super(YMedia, self).__init__(*args, **kwargs)
