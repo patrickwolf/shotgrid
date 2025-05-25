@@ -13,21 +13,23 @@ class YMedia(Entity):
 
     fields = [
         "id",
-        "description",
         "code",
+        "sg_ypackage",
+        "sg_ynotes",
+        "sg_yaction",
+        "sg_yissue",
+        "description",
+        "sg_submitted_for",
         "sg_status_list",
-        "sg_submission",
         "sg_srcpath",
         "sg_dstpath",
         "sg_link",
         "sg_task",
-        "sg_user",
         "sg_version",
-        "sg_publishedfiletype",
         "sg_publishedfile",
-        "sg_ynotes",
-        "sg_yaction",
-        "sg_yissue"
+        "sg_pubfiletype",
+        "sg_playlist",
+        "sg_user",
     ]
 
     # User Administrated in Shotgrid

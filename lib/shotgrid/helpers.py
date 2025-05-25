@@ -91,34 +91,48 @@ def dict_diff(original: dict, updated: dict) -> dict:
     return diff
 
 
-def remove_keys(data: dict, keys_to_remove: list = [], remove_empty: bool = False, update_in_place: bool = False) -> dict:
+def remove_keys(data: dict, keys: list = [], mode: str = "remove", remove_empty: bool = False, update_in_place: bool = False) -> dict:
     """ 
-    Returns a dictionary with specified keys removed. 
+    Returns a dictionary with keys either removed or kept based on the specified mode.
 
     Args:
         data: The original dictionary
-        keys_to_remove: List of keys to remove from the dictionary
-        update_in_place: If True, modifies the original dictionary and returns it.
-                         If False (default), returns a new copy with keys removed.
+        keys: List of keys to process according to the specified mode
+        mode: Either "remove" (default) to remove the specified keys or "keep" to keep only the specified keys
         remove_empty: If True, removes any keys with empty values (None, "", [], {}, etc.).
                       Default is False.
+        update_in_place: If True, modifies the original dictionary and returns it.
+                         If False (default), returns a new copy with keys processed.
 
     Returns:
-        A dictionary with the specified keys removed. If update_in_place is True,
+        A dictionary with the specified keys processed. If update_in_place is True,
         this will be the original dictionary object; otherwise, it will be a copy.
+
+    Raises:
+        ValueError: If mode is not one of "keep" or "remove"
     """
     if not data:
         return {}
 
-    if not keys_to_remove and not remove_empty:
+    if mode not in ["keep", "remove"]:
+        raise ValueError('Mode must be either "keep" or "remove"')
+
+    if not keys and not remove_empty and mode == "remove":
         return data if update_in_place else data.copy()
 
     # Either use the original dictionary or create a copy
     result = data if update_in_place else data.copy()
 
-    # Remove each key if it exists in the dictionary
-    for key in keys_to_remove:
-        if key in result:
+    # Process keys based on mode
+    if mode == "remove":
+        # Remove each key if it exists in the dictionary
+        for key in keys:
+            if key in result:
+                del result[key]
+    else:  # mode == "keep"
+        # Keep only the specified keys
+        keys_to_remove = [key for key in result if key not in keys]
+        for key in keys_to_remove:
             del result[key]
 
     # Remove keys with empty values if requested

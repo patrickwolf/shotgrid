@@ -13,13 +13,14 @@ class YPackage(Entity):
 
     fields = [
         "id",
-        "description",
         "code",
+        "description",
         "sg_status_list",
         "sg_yaction",
-        "sg_playlist",
-        "sg_ynotes",
         "sg_yissue",
+        "sg_ynotes",
+        "sg_playlist",
+        "sg_ymedia_1",
         "tags"
     ]
 

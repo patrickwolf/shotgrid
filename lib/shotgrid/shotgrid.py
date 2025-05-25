@@ -63,6 +63,24 @@ entity_type_class_map = dict(
 )
 
 
+class Status(str, Enum):
+    """
+    Enum representing the various status values used in the ETL process.
+
+    Using str as a base class allows for direct string comparison while 
+    maintaining the benefits of an enum.
+    """
+    # Processing statuses
+    REVIEW = "rev"       # In review
+    WAITING = "wtg"      # Waiting to go
+
+    # Completion status
+    COMPLETE = "cmpt"    # Completed
+
+    def __str__(self):
+        return self.value
+
+
 class Shotgrid(FPT):
     """
     Shotgrid wrapper base class. Managed connection and starting point for
@@ -274,11 +292,14 @@ class Shotgrid(FPT):
             entity: The entity to check
 
         Returns:
-            bool: True if the entity has an 'id', False otherwise
+            dict: Cleaned up for shotgun to use as a link
         """
         if entity is None:
             return None
         elif isinstance(entity, dict) and entity.get('id', None):
-            return entity
+            minimal_fields = ['id', 'code', 'name', 'content', 'type']
+            entity = helpers.remove_keys(entity, minimal_fields, mode="keep", remove_empty=True)
+            if entity.get('id'):
+                return entity
         elif isinstance(entity, Entity) and entity.id():
             return entity.data_id

@@ -101,7 +101,7 @@ class Entity(object):
         minimal_fields = ['id', 'code', 'name', 'content', 'type'
                           ]
         val = {key: getattr(self.data, key) for key in minimal_fields if getattr(self.data, key)}
-        val['uname'] = self.uname_id
+        # val['uname'] = self.uname_id
         return val
 
     def api(self):
