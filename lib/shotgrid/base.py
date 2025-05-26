@@ -347,6 +347,8 @@ class Entity(object):
             else:
                 update_mode.update({'tags': 'add'})
 
+        # Remove keys that are not in the fields lis
+        data = helpers.remove_keys(data, ['id', 'type'])
         result = self.api().update(
             self.type(), self.id(), data, multi_entity_update_modes=update_mode
         )
