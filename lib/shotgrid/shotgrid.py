@@ -189,11 +189,13 @@ class Shotgrid(FPT):
         """Returns shotgrid entity type as str."""
         return self.__class__.__name__
 
-    def retire_recent_entities(self, entity_types: list, project_id: int, hours: int = 1):
-        """Retires entities that have not been modified in the last n hours.
+    def retire_recent_entities(self, entity_types: list, project_id: int, minutes: int = 60, action: str = "retire"):
+        """Retires entities that have been created in the last n minutes or removes the auto_tag from them.
 
-        :param entity_types: list of entity types to retire
-        :param hours: number of hours to check for modification
+        :param entity_types: list of entity types to retire or untag
+        :param project_id: project ID to filter entities by
+        :param minutes: number of minutes to check for creation (default: 60)
+        :param action: "retire" to delete entities or "untag" to remove auto_tag
         """
         if not entity_types:
             raise ValueError("entity_types must not be empty")
@@ -203,10 +205,22 @@ class Shotgrid(FPT):
             raise ValueError("entity_types must be a list")
         if not isinstance(project_id, int):
             raise ValueError("project_id must be an int")
+        if action not in ["retire", "untag"]:
+            raise ValueError("action must be either 'retire' or 'untag'")
+
+        # Calculate timestamp for X minutes ago
+        import datetime
+        from datetime import timezone
+
+        # Get current time in UTC (which Shotgrid API uses)
+        now = datetime.datetime.now(timezone.utc)
+
+        # Calculate timestamp for minutes ago
+        minutes_ago = now - datetime.timedelta(minutes=minutes)
 
         filters = [
             ['project', 'is', {'type': 'Project', 'id': project_id}],
-            ['created_at', 'in_last', hours, 'HOUR'],
+            ['created_at', 'greater_than', minutes_ago],  # Use timestamp directly
             ['tags', 'is', Entity.auto_tag],
             ['created_by', 'is', {'id': 93, 'name': 'Yeti 1.0', 'type': 'ApiUser'}],
         ]
@@ -215,15 +229,29 @@ class Shotgrid(FPT):
         for entity_type in entity_types:
             items.extend(self.find(entity_type, filters, ['name', 'code', 'content']))
 
-        log.info(f"Retiring {len(items)} entities of type {entity_types} that have been created in the last {hours} hours")
+        action_str = "retiring" if action == "retire" else "removing auto_tag from"
+        log.info(f"{action_str.capitalize()} {len(items)} entities of type {entity_types} that have been created in the last {minutes} minutes")
         log.info(items)
 
         batch_data = []
         for item in items:
-            batch_data.append({"request_type": "delete",
-                               "entity_type": item["type"],
-                               "entity_id": item["id"]})
-        self.batch(batch_data)
+            if action == "retire":
+                batch_data.append({
+                    "request_type": "delete",
+                    "entity_type": item["type"],
+                    "entity_id": item["id"]
+                })
+            elif action == "untag":
+                batch_data.append({
+                    "request_type": "update",
+                    "entity_type": item["type"],
+                    "entity_id": item["id"],
+                    "multi_entity_update_modes": {"tags": "remove"},
+                    "data": {"tags": [Entity.auto_tag]}
+                })
+
+        if batch_data:
+            self.batch(batch_data)
 
     @functools.lru_cache(maxsize=None)
     def get_lookup(self, entity_type: str, key_field: str = "code", fields: tuple = None, separator: str = None):
