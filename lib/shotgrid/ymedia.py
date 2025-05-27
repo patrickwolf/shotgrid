@@ -30,6 +30,7 @@ class YMedia(Entity):
         "sg_pubfiletype",
         "sg_playlist",
         "sg_ystatus",
+        "sg_ylogs",
         "sg_ysteps",
         "sg_user",
     ]
