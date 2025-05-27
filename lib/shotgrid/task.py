@@ -48,6 +48,7 @@ class Task(Entity):
         "content",
         "name",
         "step",
+        "tags",
         "sg_status_list",
         "task_assignees",
         "versions",
@@ -56,8 +57,20 @@ class Task(Entity):
     def __init__(self, *args, **kwargs):
         super(Task, self).__init__(*args, **kwargs)
 
-    def __repr__(self):
-        return '<{0} "{1}">'.format(self.__class__.__name__, self.data.content)
+    # def __repr__(self):
+    #     return '<{0} "{1}" ({2})>'.format(self.__class__.__name__, self.data.content, self.data.id)
+
+    @property
+    def uname(self):
+        return self.data.content
+
+    @property
+    def code(self):
+        return self.data.content
+
+    @code.setter
+    def code(self, value):
+        self.data.content = value
 
     def get_assignees(self, deep: bool = False):
         """Returns a list of Person objects from shotgrid.

@@ -36,25 +36,25 @@ Contains dotdictify class.
 
 class dotdictify(dict):
     """
-    Dot-accessible dictionary. Allows you to access dictionary keys as attributes.
+    from shotgrid.dotdictify import dotdictify
 
-        >>> life = {
-        ...     'bigBang': {
-        ...         'stars': {
-        ...             'planets': {}
-        ...         }
-        ...     }
-        ... }
-        >>> data = dotdictify(life)
-        >>> print(data.bigBang.stars.planets)
-        {}
-        >>> data.bigBang.stars.planets.earth = {'singleCellLife': 1}
-        >>> print(data.bigBang.stars.planets)
-        {'earth': {'singleCellLife': 1}}
-        >>> print(data.bigBang.stars.planets.earth.singleCellLife)
-        1
-        >>> print(data.bigBang.stars.planets.earth.foobar)
-        {}
+        life = {
+        'bigBang': {
+            'stars': {
+                'planets': {}
+            }
+       }
+    }
+
+    life = dotdictify(life)
+    print ( life.bigBang.stars.planets)
+    life.bigBang.stars.planets.earth = {'singleCellLife': 1}
+    print( life.bigBang.stars.planets)
+    print( life.bigBang.stars.planets.earth.singleCellLife)
+
+    # Accessing missing keys returns None {} modifying the dictionary
+    data = dotdictify(life)
+    a = data.bigBang.stars.planets.nonexistent.attribute  # Returns None, doesn't modify data
     """
 
     marker = object()
@@ -74,10 +74,10 @@ class dotdictify(dict):
         dict.__setitem__(self, key, value)
 
     def __getitem__(self, key):
-        found = self.get(key, dotdictify.marker)
-        if found is dotdictify.marker:
-            found = dotdictify()
-            dict.__setitem__(self, key, found)
+        found = self.get(key)
+        if found is None:
+            # Return a new empty instance for chaining that doesn't modify self
+            return dotdictify()
         return found
 
     __setattr__ = __setitem__

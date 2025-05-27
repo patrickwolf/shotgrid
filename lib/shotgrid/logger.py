@@ -37,9 +37,9 @@ import logging
 
 from shotgrid import config
 
-log = logging.Logger("shotgrid")
-log.setLevel(config.LOG_LEVEL)
+log = logging.getLogger("yeti.shotgrid")
+# log.setLevel(config.LOG_LEVEL)
 
-streamHandler = logging.StreamHandler()
-streamHandler.setFormatter(logging.Formatter("%(levelname)s - %(message)s"))
-log.addHandler(streamHandler)
+# streamHandler = logging.StreamHandler()
+# streamHandler.setFormatter(logging.Formatter("%(levelname)s - %(message)s"))
+# log.addHandler(streamHandler)

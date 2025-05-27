@@ -42,6 +42,8 @@ from shotgrid.delivery import Delivery
 from shotgrid.playlist import Playlist
 from shotgrid.sequence import Sequence
 from shotgrid.shot import Shot
+from shotgrid.ymedia import YMedia
+from shotgrid.ypackage import YPackage
 
 
 class Project(Entity):
@@ -88,9 +90,22 @@ class Project(Entity):
         :param versions: list of Versions to add to Playlist
         :return: Playlist object
         """
-        data.update({"code": code, "versions": [v.data for v in versions]})
+        # Normalize versions to ensure we have data objects
+        normalized_versions = [v.data if hasattr(v, 'data') else v for v in versions if v]
+
+        data.update({"code": code, "versions": normalized_versions})
         results = self.create("Playlist", data=data)
         return Playlist(self, results)
+
+    def create_sequence(self, code: str, **data):
+        """Creates a new sequence.
+
+        :param code: sequence code
+        :return: Sequence object
+        """
+        data.update({"code": code})
+        results = self.create("Sequence", data=data)
+        return Sequence(self, results)
 
     def create_sequence(self, code: str, **data):
         """Creates a new sequence.
@@ -162,6 +177,46 @@ class Project(Entity):
         except socket.gaierror as e:
             raise
 
+    def get_persons(self, code: str = None, fields: list = None):
+
+        from shotgrid.person import Person
+
+        fields = fields or Person.fields
+        params = []
+
+        if code is not None:
+            params.append(["name", "is", code])
+
+        try:
+            results = self.api().find("Person", params, fields=fields)
+            person = list()
+            for r in results:
+                person.append(Person(self, data=r))
+            return person
+
+        except socket.gaierror as e:
+            raise
+
+    def get_groups(self, code: str = None, fields: list = None):
+
+        from shotgrid.group import Group
+
+        fields = fields or Group.fields
+        params = []
+
+        if code is not None:
+            params.append(["code", "is", code])
+
+        try:
+            results = self.api().find("Group", params, fields=fields)
+            group = list()
+            for r in results:
+                group.append(Group(self, data=r))
+            return group
+
+        except socket.gaierror as e:
+            raise
+
     def get_playlists(self, code: str = None, fields: list = None):
         """Returns a list of playlists from shotgrid for this project.
 
@@ -182,6 +237,56 @@ class Project(Entity):
             for r in results:
                 playlists.append(Playlist(self, data=r))
             return playlists
+
+        except socket.gaierror as e:
+            raise
+
+    def get_ymedia(self, code: str = None, fields: list = None):
+        """Returns a list of sequences from shotgrid for this project.
+
+        :param code: sequence code
+        :param fields: which fields to return (optional)
+        :return: sequence list from shotgrid for this project
+        :raise: socket.gaierror if can't connect to shotgrid
+        """
+
+        fields = fields or YMedia.fields
+        params = [["project", "is", self.data]]
+
+        if code is not None:
+            params.append(["code", "is", code])
+
+        try:
+            results = self.api().find(YMedia.entity_type, params, fields=fields)
+            seqs = list()
+            for r in results:
+                seqs.append(YMedia(self, data=r))
+            return seqs
+
+        except socket.gaierror as e:
+            raise
+
+    def get_ypackage(self, code: str = None, fields: list = None):
+        """Returns a list of sequences from shotgrid for this project.
+
+        :param code: sequence code
+        :param fields: which fields to return (optional)
+        :return: sequence list from shotgrid for this project
+        :raise: socket.gaierror if can't connect to shotgrid
+        """
+
+        fields = fields or YPackage.fields
+        params = [["project", "is", self.data]]
+
+        if code is not None:
+            params.append(["code", "is", code])
+
+        try:
+            results = self.api().find(YPackage.entity_type, params, fields=fields)
+            seqs = list()
+            for r in results:
+                seqs.append(YPackage(self, data=r))
+            return seqs
 
         except socket.gaierror as e:
             raise
@@ -211,7 +316,7 @@ class Project(Entity):
         except socket.gaierror as e:
             raise
 
-    def get_shots(self, code: str = None, fields: list = None):
+    def get_shots(self, code: str = None, id: int = None, fields: list = None) -> list[Shot]:
         """Returns a list of shots from shotgrid for this project.
 
         :param code: shot code
@@ -226,6 +331,9 @@ class Project(Entity):
         if code is not None:
             params.append(["code", "is", code])
 
+        if id is not None:
+            params.append(["id", "is", id])
+
         try:
             results = self.api().find("Shot", params, fields=fields)
             shots = list()
@@ -235,6 +343,29 @@ class Project(Entity):
 
         except socket.gaierror as e:
             raise
+
+    def get_shots2(self, code: str = None, id: int = None, fields: list = None, limit=0) -> list[Shot]:
+        """Returns a list of shots from shotgrid for this project.
+
+        :param code: shot code
+        :param fields: which fields to return (optional)
+        :return: shot list from shotgrid for given project
+        :raise: socket.gaierror if can't connect to shotgrid
+        """
+        filters = [["project", "is", self.data]]
+
+        return super()._get_entities("Shot", code, id, filters=filters, fields=fields, limit=limit)
+
+    def get_shot2(self, code: str = None, id: int = None, fields: list = None) -> Shot:
+        """Returns a shot from shotgrid for this project.
+
+        :param id: shot id
+        :return: shot object from shotgrid for given project
+        :raise: socket.gaierror if can't connect to shotgrid
+        """
+        filters = [["project", "is", self.data]]
+
+        return super()._get_entity("Shot", code, id, filters, fields)
 
     def get_steps(
         self, short_name: str = None, filters: list = None, fields: list = None
@@ -265,6 +396,33 @@ class Project(Entity):
                 steps.append(Step(self, data=r))
             return steps
 
+        except socket.gaierror as err:
+            log.error(err.message)
+            raise
+
+    def get_group_lookup(self):
+        """Returns a dictionary of group names and ids.
+
+        :return: dictionary of group names and ids
+        """
+        try:
+            return self.api().get_lookup("Group", "sg_vendor_code")
+        except socket.gaierror as err:
+            log.error(err.message)
+            raise
+
+    def get_published_file_type_lookup(self):
+        """Returns a dictionary of published file types and ids.
+
+        :return: dictionary of published file types and ids
+        """
+        fields = ("sg_typegroup", "sg_extensions", "sg_autoupload", "code")
+        result = self.api().get_lookup("PublishedFileType",
+                                       "sg_extensions", fields=fields, separator=",")
+
+        try:
+            return self.api().get_lookup("PublishedFileType",
+                                         "sg_extensions", fields=fields, separator=",")
         except socket.gaierror as err:
             log.error(err.message)
             raise

@@ -32,10 +32,8 @@
 __doc__ = """
 Contains Asset base class.
 """
-
 from shotgrid.base import Entity
 from shotgrid.logger import log
-
 
 class Asset(Entity):
     """Shotgrid Asset entity."""
@@ -46,14 +44,15 @@ class Asset(Entity):
         "id",
         "description",
         "code",
+        "tags",
         "sg_status_list",
     ]
 
     def __init__(self, *args, **kwargs):
         super(Asset, self).__init__(*args, **kwargs)
 
-    def __repr__(self):
-        return '<{0} "{1}">'.format(self.__class__.__name__, self.data.code)
+    # def __repr__(self):
+    #     return '<{0} "{1}">'.format(self.__class__.__name__, self.data.code)
 
     def create_task(self, content: str, **data):
         """Creates a new Task with this asset as the parent.
@@ -80,3 +79,11 @@ class Asset(Entity):
         data.update({"code": code, "entity": self.data, "sg_task": task.data})
         results = self.create("Version", data=data)
         return Version(self, results)
+
+    def get_published_files(self, code: str = None, id:int=None, filters: list = None, fields: list = None):
+        params = [["entity", "is", self.data]]
+
+        if filters is not None:
+            params.extend(filters)
+
+        return self._get_published_files(code=code, id=id, filters=params, fields=fields)
