@@ -79,3 +79,41 @@ class Movie(Entity):
         if not os.path.exists(dl):
             log.error("download failed")
         return dl
+
+    def upload(self, file_path: str = None) -> bool:
+        attachment_exists = self.check_attachment_exists('sg_uploaded_movie')
+        if not attachment_exists:
+            for i in range(3):
+                try:
+                    if self.api().upload(self.parent().entity_type, self.parent().id(), file_path, field_name='sg_uploaded_movie'):
+                        log.info('Uploaded %s to %s %s' % (file_path, self.parent().entity_type, self.parent().id()))
+                        return True
+                except requests.exceptions.RequestException as e:
+                    log.error(f"Upload failed on attempt {i + 1}: {e}")
+                    if i < 2:
+                        log.info("Retrying upload...")
+        return False
+
+    # def upload2(self, entity_type: str, entity_id: int, field_name: str, file_path: str = None) -> bool:
+    #     attachment_exists = self.check_attachment_exists(entity['type'], entity['id'])
+    #     if not attachment_exists:
+    #         if self.api().upload(entity_type, entity_id, file_path, field_name):
+    #             log.info('Uploaded %s to %s %s' % (file_path, entity_type, entity_id))
+    #             return True
+    #     return False
+
+    def check_attachment_exists(self, field_name: str = 'sg_uploaded_movie'):
+        """For file mode only, if uploading files to a specific field, checks to see
+        if there is already a file in that entity field. File upload will fail if
+        a file already exists on the entity so we don't accidentally blow things
+        away. You can disable this if you like.
+        """
+        # not applicable if we're not uploading to a field
+        if not field_name:
+            return False
+        result = self.api().find_one(self.parent().entity_type, [['id', 'is', self.parent().id()]], [field_name])
+        if result[field_name]:
+            log.debug('File already exists for %s %s in field %s: %s' %
+                      (self.parent().entity_type, self.parent().id(), field_name, result[field_name]))
+            return True
+        return False
