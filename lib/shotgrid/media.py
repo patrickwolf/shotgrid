@@ -81,17 +81,33 @@ class Movie(Entity):
         return dl
 
     def upload(self, file_path: str = None) -> bool:
+        """Upload a file to the entity's sg_uploaded_movie field."""
+        if not file_path or not os.path.exists(file_path):
+            log.error(f"File not found: {file_path}")
+            return False
+
         attachment_exists = self.check_attachment_exists('sg_uploaded_movie')
-        if not attachment_exists:
-            for i in range(3):
-                try:
-                    if self.api().upload(self.parent().entity_type, self.parent().id(), file_path, field_name='sg_uploaded_movie'):
-                        log.info('Uploaded %s to %s %s' % (file_path, self.parent().entity_type, self.parent().id()))
-                        return True
-                except requests.exceptions.RequestException as e:
-                    log.error(f"Upload failed on attempt {i + 1}: {e}")
-                    if i < 2:
-                        log.info("Retrying upload...")
+        if attachment_exists:
+            log.info(f"Attachment already exists for {self.parent().entity_type} {self.parent().id()}")
+            return False
+
+        for i in range(3):
+            try:
+                # Let the API handle the file opening and closing
+                result = self.api().upload(
+                    self.parent().entity_type,
+                    self.parent().id(),
+                    file_path,
+                    field_name='sg_uploaded_movie'
+                )
+                if result:
+                    log.info(f'Uploaded {file_path} to {self.parent().entity_type} {self.parent().id()}')
+                    return True
+            except requests.exceptions.RequestException as e:
+                log.error(f"Upload failed on attempt {i + 1}: {e}")
+                if i < 2:
+                    log.info("Retrying upload...")
+
         return False
 
     # def upload2(self, entity_type: str, entity_id: int, field_name: str, file_path: str = None) -> bool:
