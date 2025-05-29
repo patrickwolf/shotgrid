@@ -44,13 +44,10 @@ class Group(Entity):
 
     fields = [
         "id",
-        "code"
+        "code",
         "sg_vendor_code",
         "sg_type",
     ]
 
     def __init__(self, *args, **kwargs):
         super(Group, self).__init__(*args, **kwargs)
-
-    def __repr__(self):
-        return '<{0} "{1}">'.format(self.__class__.__name__, self.data.name)

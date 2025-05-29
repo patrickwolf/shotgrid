@@ -400,13 +400,40 @@ class Project(Entity):
             log.error(err.message)
             raise
 
+    def get_group(self, code: str = None, id: int = None, data: dict = None) -> 'shotgrid.Group':
+        """Returns a group from shotgrid for this project.
+
+        :param code: group code
+        :param id: group id
+        :param fields: which fields to return (optional)
+        :return: Group object from shotgrid for given project
+        :raise: socket.gaierror if can't connect to shotgrid
+        """
+        from shotgrid.group import Group
+
+        if data:
+            if not isinstance(data, dict):
+                raise TypeError("data must be a dictionary")
+            id = data.get("id", None)
+        if code is not None and id is not None:
+            raise ValueError("Specify either code or id, not both.")
+        if code is not None:
+            group_dict = self.get_group_lookup().get(code, None)
+        else:
+            group_dict = next((group for group in self.get_group_lookup().values()
+                               if group.get("id") == id), None)
+        if group_dict:
+            return Group(self, data=group_dict)
+
     def get_group_lookup(self):
         """Returns a dictionary of group names and ids.
 
         :return: dictionary of group names and ids
         """
+        from shotgrid.group import Group
         try:
-            return self.api().get_lookup("Group", "sg_vendor_code")
+            fields = tuple(Group.fields)
+            return self.api().get_lookup("Group", "sg_vendor_code", fields=fields)
         except socket.gaierror as err:
             log.error(err.message)
             raise

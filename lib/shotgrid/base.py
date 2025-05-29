@@ -187,6 +187,36 @@ class Entity(object):
             log.error(err.message)
             raise
 
+    def get_lastest_version_number(self):
+        """Returns a list of versions from shotgrid given a shot and task dictionary.
+
+        :param code: sg version code
+        :param filters: additional filters (optional)
+        :param fields: which fields to return (optional)
+        :return: list of versions for this entity
+        :raise: gaierror if can't connect to shotgrid.
+        """
+        from shotgrid.task import Task
+
+        fields = ["code",]
+
+        if self.type() == Task.entity_type:
+            filters = [["sg_task", "is", self.data]]
+        else:
+            filters = [["entity", "is", self.data]]
+
+        try:
+            results = self.api().find("Version", filters, fields=fields, limit=3, order=[
+                {"field_name": "created_at", "direction": "desc"}])
+            versions = [r['code'] for r in results if 'code' in r]
+            if not versions:
+                return 0
+            # Get the highest version number from the list
+            return helpers.get_highest_version(versions)
+        except socket.gaierror as err:
+            log.error(err.message)
+            raise
+
     def get_versions(self, code: str = None, filters: list = None, fields: list = None):
         """Returns a list of versions from shotgrid given a shot and task dictionary.
 

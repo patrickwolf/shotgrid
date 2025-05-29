@@ -1,3 +1,33 @@
+def get_highest_version(version_strings):
+    """
+    Extract the highest version number from a list of version strings.
+
+    :param version_strings: List of strings containing version numbers in format 'v###'
+    :return: The highest version number as an integer
+
+    # Example usage:
+    # print(get_highest_version(['STN_6620_povs_OPS_v006', 'STN_6620_ref_OPS_v007', 'STN_6620_comp_OPS_v003']))    
+    """
+    import re
+
+    # Initialize with lowest possible version
+    highest_version = 0
+
+    # Pattern to match version numbers (v followed by digits)
+    pattern = r'v(\d+)'
+
+    for version_string in version_strings:
+        # Search for the pattern in the string
+        match = re.search(pattern, version_string)
+        if match:
+            # Extract the digits and convert to integer
+            version_num = int(match.group(1))
+            # Update highest version if current is higher
+            highest_version = max(highest_version, version_num)
+
+    return highest_version
+
+
 def list_of_dicts_to_dict(items, key, separator=None) -> dict:
     """
     Convert a list of dictionaries to a dictionary using a specified key.
