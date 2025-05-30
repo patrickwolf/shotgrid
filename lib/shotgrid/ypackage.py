@@ -24,6 +24,7 @@ class YPackage(Entity):
         "sg_ysteps",
         "sg_ylogs",
         "sg_ymedia_1",
+        "sg_sourcepath",
         "tags"
     ]
 
