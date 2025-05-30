@@ -129,7 +129,7 @@ class Movie(Entity):
             return False
         result = self.api().find_one(self.parent().entity_type, [['id', 'is', self.parent().id()]], [field_name])
         if result[field_name]:
-            log.debug('File already exists for %s %s in field %s: %s' %
-                      (self.parent().entity_type, self.parent().id(), field_name, result[field_name]))
+            log.debug('File already exists for %s %s in field %s' %
+                      (self.parent().entity_type, self.parent().id(), field_name))
             return True
         return False
