@@ -36,7 +36,7 @@ Contains Movie base classes.
 import os
 
 import requests
-
+import shotgun_api3
 from shotgrid.base import Entity
 from shotgrid.logger import log
 
@@ -91,7 +91,7 @@ class Movie(Entity):
             log.info(f"Attachment already exists for {self.parent().entity_type} {self.parent().id()}")
             return False
 
-        for i in range(3):
+        for i in range(10):
             try:
                 # Let the API handle the file opening and closing
                 result = self.api().upload(
@@ -103,9 +103,9 @@ class Movie(Entity):
                 if result:
                     log.info(f'Uploaded {file_path} to {self.parent().entity_type} {self.parent().id()}')
                     return True
-            except requests.exceptions.RequestException as e:
+            except shotgun_api3.ShotgunError as e:
                 log.error(f"Upload failed on attempt {i + 1}: {e}")
-                if i < 2:
+                if i < 9:
                     log.info("Retrying upload...")
 
         return False
