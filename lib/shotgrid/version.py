@@ -51,6 +51,7 @@ class Version(Entity):
         "sg_version_type",
         "sg_status_list",
         "sg_uploaded_movie",
+        "sg_ingests"
     ]
 
     def __init__(self, *args, **kwargs):
