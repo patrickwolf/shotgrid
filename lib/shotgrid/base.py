@@ -30,11 +30,12 @@
 #
 
 __doc__ = """
-Contains the entity base class.
+Contains the entity base class..
 """
 
 import socket
 from enum import Enum, auto
+from typing import Set, List, Dict, Any, Iterable  # Added List, Dict, Any, Iterable
 from shotgrid.dotdictify import dotdictify
 import shotgrid.helpers as helpers
 from shotgrid.logger import log
@@ -117,13 +118,13 @@ class Entity(object):
         if self.id():
             raise ValueError("Cannot save entity with id, use update() instead.")
 
-        data = helpers.remove_keys(data, ['id', 'type'])
+        data = helpers.remove_keys(self.data, ['id', 'type'])
         data.update({"project": self.get_project().data})
         # Set Pipeline Tag
         if self.auto_tag:
             data.update({'tags': [self.auto_tag]})
-        data = self.api().create(self.entity_type, data)
-        self._set_data(data)
+        result = self.api().create(self.entity_type, data)
+        self._set_data(result)
         return self
 
     def create(self, entity_type: str, data: dict):
@@ -373,18 +374,49 @@ class Entity(object):
         if self.auto_tag:
             data.update({'tags': [self.auto_tag]})
             if not update_mode:
-                update_mode = {'tags': 'add'}
+                update_mode = {'tags': 'set'}
             else:
-                update_mode.update({'tags': 'add'})
+                update_mode.update({'tags': 'set'})
 
         # Remove keys that are not in the fields lis
         data = helpers.remove_keys(data, ['id', 'type'])
         result = self.api().update(
             self.type(), self.id(), data, multi_entity_update_modes=update_mode
         )
-        self.data.update(data)
+        self.data.update(result)
         return result
 
+    @property
+    def tags(self) -> List[int]:  # Changed return type
+        """
+        Gets the tag IDs for this entity as a list of unique integers,
+        preserving the order from ShotGrid.
+        """
+        current_sg_tags_list = self.data.get('tags')
+        if not isinstance(current_sg_tags_list, list):
+            return []
+
+        ids = []
+        for tag_dict in current_sg_tags_list:
+            if isinstance(tag_dict, dict) and tag_dict.get('type') == 'Tag' and 'id' in tag_dict:
+                ids.append(tag_dict['id'])
+
+        # Return unique IDs, preserving order of first appearance
+        return ids
+
+    @tags.setter
+    def tags(self, value: Set[int]):  # Changed input type to Set[int]
+        """
+        Sets the tags for this entity from a set of integer IDs.
+        Updates self.data.tags to ShotGrid's list of dictionaries format.
+        """
+        if not isinstance(value, set):
+            raise TypeError(f"Tags must be a set of integer IDs. Got {type(value)}.")
+
+        if value and not all(isinstance(item, int) for item in value):
+            raise TypeError("All items in the tags set must be integer IDs.")
+
+        self.data.tags = [{'type': 'Tag', 'id': tag_id} for tag_id in value]
     # --------------------------------------------------
 
     class RetrievalMethod(str, Enum):
