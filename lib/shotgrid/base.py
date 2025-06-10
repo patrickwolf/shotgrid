@@ -121,8 +121,7 @@ class Entity(object):
         data = helpers.remove_keys(self.data, ['id', 'type'])
         data.update({"project": self.get_project().data})
         # Set Pipeline Tag
-        if self.auto_tag:
-            data.update({'tags': [self.auto_tag]})
+        self._set_auto_tag(data)
         result = self.api().create(self.entity_type, data)
         self._set_data(result)
         return self
@@ -133,8 +132,7 @@ class Entity(object):
         data = helpers.remove_keys(data, ['id', 'type'])
         data.update({"project": self.get_project().data})
         # Set Pipeline Tag
-        if self.auto_tag:
-            data.update({'tags': [self.auto_tag]})
+        self._set_auto_tag(data)
         return self.api().create(entity_type, data)
 
     def delete(self):
@@ -371,12 +369,7 @@ class Entity(object):
         if not data:
             return self.data
 
-        if self.auto_tag:
-            data.update({'tags': [self.auto_tag]})
-            if not update_mode:
-                update_mode = {'tags': 'set'}
-            else:
-                update_mode.update({'tags': 'set'})
+        update_mode = self._set_auto_tag(update_mode, data)
 
         # Remove keys that are not in the fields lis
         data = helpers.remove_keys(data, ['id', 'type'])
@@ -386,20 +379,57 @@ class Entity(object):
         self.data.update(result)
         return result
 
+    def _set_auto_tag(self, update_mode=None, data=None):
+        """
+        Ensures that the auto_tag is included in the entity's tags.
+
+        Args:
+            update_mode (dict, optional): Dictionary of update modes for multi-entity fields
+            data (dict, optional): The data dictionary to modify
+
+        Returns:
+            dict: The updated update_mode dictionary
+        """
+        # Initialize update_mode if not provided
+        if update_mode is None:
+            update_mode = {}
+
+        # If no data provided or no auto_tag defined, just return the update_mode
+        if data is None or not self.auto_tag:
+            return update_mode
+
+        # Get current tags or initialize empty list
+        tags_list = data.get('tags', [])
+        if tags_list is None:
+            tags_list = []
+            data["tags"] = tags_list
+
+        # Extract tag IDs from the tag dictionaries
+        tag_ids = {tag.get("id") for tag in tags_list if isinstance(tag, dict)}
+
+        # Add auto_tag if it's not already in the list
+        if self.auto_tag['id'] not in tag_ids:
+            data["tags"].append(self.auto_tag)
+
+        # Ensure update_mode includes proper setting for tags
+        update_mode['tags'] = 'set'
+
+        return update_mode
+
     @property
-    def tags(self) -> List[int]:  # Changed return type
+    def tags(self) -> Set[int]:  # Changed return type
         """
         Gets the tag IDs for this entity as a list of unique integers,
         preserving the order from ShotGrid.
         """
         current_sg_tags_list = self.data.get('tags')
         if not isinstance(current_sg_tags_list, list):
-            return []
+            return set()
 
-        ids = []
+        ids = set()
         for tag_dict in current_sg_tags_list:
             if isinstance(tag_dict, dict) and tag_dict.get('type') == 'Tag' and 'id' in tag_dict:
-                ids.append(tag_dict['id'])
+                ids.add(tag_dict['id'])
 
         # Return unique IDs, preserving order of first appearance
         return ids
