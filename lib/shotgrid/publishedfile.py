@@ -18,8 +18,10 @@ class PublishedFile(Entity):
         "name",
         "entity",
         "tags",
+        "task",
         "published_file_type",
         "version",
+        "path",
         "version_number",
     ]
 

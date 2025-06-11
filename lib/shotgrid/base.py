@@ -133,7 +133,9 @@ class Entity(object):
         data.update({"project": self.get_project().data})
         # Set Pipeline Tag
         self._set_auto_tag(data)
-        return self.api().create(entity_type, data)
+        new_entity = self.api().create(entity_type, data)
+        new_wrapped_entity = self.api().create_entity(entity_type, self.parent(), new_entity)
+        return new_wrapped_entity
 
     def delete(self):
         """Deletes this entity from shotgrid."""
@@ -379,7 +381,7 @@ class Entity(object):
             self.type(), self.id(), data, multi_entity_update_modes=update_mode
         )
         self.data.update(result)
-        return result
+        return self
 
     def _set_auto_tag(self, update_mode=None, data=None):
         """
