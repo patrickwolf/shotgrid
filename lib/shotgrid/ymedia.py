@@ -14,6 +14,7 @@ class YMedia(Entity):
     fields = [
         "id",
         "code",
+        "tags",
         "sg_ypackage",
         "sg_ynotes",
         "sg_yaction",
