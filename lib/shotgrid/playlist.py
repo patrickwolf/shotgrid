@@ -47,6 +47,7 @@ class Playlist(Entity):
         "id",
         "code",
         "description",
+        "sg_playlist_type",
         "locked",
         "versions",
     ]

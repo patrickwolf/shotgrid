@@ -299,9 +299,11 @@ class Entity(object):
             raise
 
     def _get_entity(self, type: str, code: str = None, id: int = None, filters=None, fields: list = None):
-        """Returns a shot from shotgrid for this project.
-
-        :param id: shot id
+        """Returns an entity from shotgrid for this project.
+        :param type: entity type, e.g. 'Shot', 'Asset', etc.
+        :param code: entity code
+        :param filters: additional filters to apply to the query
+        :param fields: which fields to return (optional)
         :return: shot object from shotgrid for given project
         :raise: socket.gaierror if can't connect to shotgrid
         """
@@ -399,7 +401,7 @@ class Entity(object):
             return update_mode
 
         # Get current tags or initialize empty list
-        tags_list = data.get('tags', [])
+        tags_list = data.get('tags')
         if tags_list is None:
             tags_list = []
             data["tags"] = tags_list
