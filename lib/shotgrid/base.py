@@ -351,6 +351,8 @@ class Entity(object):
         :param fields: which fields to fetch (optional)
         :raise: gaierror if can't connect to shotgrid.
         """
+        if not self.id():
+            raise ValueError("Cannot refetch entity without an id.")
         filters = [["id", "is", self.id()]]
         results = self.api().find(self.type(), filters, fields or self.fields)
         self.data = dotdictify(results[0])
