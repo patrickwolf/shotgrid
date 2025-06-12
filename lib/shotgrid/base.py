@@ -126,17 +126,21 @@ class Entity(object):
         self._set_data(result)
         return self
 
-    def create(self, entity_type: str, data: dict, wrapped: bool = False):
-        """Creates a new entity in shotgrid."""
+    def create(self, entity_type: str, data: dict):
+        """Creates a new entity in shotgrid and returns entity.data as a dictionary."""
         # Those aren't needed for creating a new entity
         data = helpers.remove_keys(data, ['id', 'type'])
         data.update({"project": self.get_project().data})
         # Set Pipeline Tag
         self._set_auto_tag(data)
-        new_entity = self.api().create(entity_type, data)
-        if wrapped:
-            new_entity = self.api().create_entity(entity_type, self.parent(), new_entity)
-        return new_entity
+        result = self.api().create(entity_type, data)
+        return result
+
+    def createw(self, entity_type: str, data: dict):
+        """Creates a new entity in shotgrid and returns the entity."""
+        result = self.create(entity_type, data)
+        result2 = self.api().create_entity(entity_type, self.parent(), result)
+        return result2
 
     def delete(self):
         """Deletes this entity from shotgrid."""
