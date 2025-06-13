@@ -47,6 +47,7 @@ class Task(Entity):
         "code",
         "content",
         "name",
+        "entity",
         "step",
         "tags",
         "sg_status_list",

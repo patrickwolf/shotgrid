@@ -57,6 +57,7 @@ class Entity(object):
         "tags",
         "sg_status_list",
     ]
+    link_field = "entity"  # default link field for parent entity
 
     def __init__(self, parent: object, data: dict = None):
         """
@@ -95,6 +96,13 @@ class Entity(object):
         :param data: data dictionary
         """
         self.data = dotdictify(data)
+
+    @property
+    def link_entity(self):
+        """Returns the parent link for this entity."""
+        if link_data_id := self.data.get("entity"):
+            link_enity = self.api().create_entity(link_data_id.get("type"), self.parent(), link_data_id)
+            return link_enity
 
     @property
     def data_id(self):
