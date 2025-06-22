@@ -48,6 +48,7 @@ class Version(Entity):
         "code",
         "tags",
         "entity",
+        "published_files",
         "sg_path_to_frames",
         "sg_version_type",
         "sg_status_list",

@@ -60,6 +60,10 @@ class YPackage(Entity):
         if "sg_ingests" not in version.data:
             version.refetch()
 
+        # TODO: Check if the version has published files linked to YPackage
+        # pubfiles = version.get_published_files()
+        # [p for p in pubfiles if p.data.get("sg_ypackage")]
+
         # Get all YMedia items linked to this version
         ymedia_links = version.data.get("sg_ingests", [])
         ymedia_ids = [ymedia.get("id") for ymedia in ymedia_links]
