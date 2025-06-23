@@ -23,6 +23,7 @@ class PublishedFile(Entity):
         "version",
         "path",
         "version_number",
+        "sg_ingests"
     ]
 
     def __init__(self, *args, **kwargs):

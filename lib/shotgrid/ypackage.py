@@ -39,7 +39,7 @@ class YPackage(Entity):
     # def __repr__(self):
     #     return '<{0} "{1}">'.format(self.__class__.__name__, self.data.code)
 
-    def is_version_linked_to_different_package(self, version):
+    def is_version_linked_to_different_package(self, version) -> bool:
         """
         Check if a Version is linked to a different YPackage than the current one.
 
@@ -59,10 +59,6 @@ class YPackage(Entity):
         # Ensure we have the latest version data
         if "sg_ingests" not in version.data:
             version.refetch()
-
-        # TODO: Check if the version has published files linked to YPackage
-        # pubfiles = version.get_published_files()
-        # [p for p in pubfiles if p.data.get("sg_ypackage")]
 
         # Get all YMedia items linked to this version
         ymedia_links = version.data.get("sg_ingests", [])
