@@ -201,7 +201,7 @@ class Entity(object):
             log.error(err.message)
             raise
 
-    def get_lastest_version_number(self):
+    def get_lastest_version_number(self, task_code: str = None):
         """Returns a list of versions from shotgrid given a shot and task dictionary.
 
         :param code: sg version code
@@ -218,6 +218,8 @@ class Entity(object):
             filters = [["sg_task", "is", self.data]]
         else:
             filters = [["entity", "is", self.data]]
+            if task_code:
+                filters.append(["sg_task.Task.content", "contains", task_code])
 
         try:
             results = self.api().find("Version", filters, fields=fields, limit=3, order=[
