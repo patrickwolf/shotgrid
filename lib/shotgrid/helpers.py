@@ -11,7 +11,7 @@ def get_highest_version(version_strings):
     import re
 
     # Initialize with lowest possible version
-    highest_version = 0
+    highest_version = None
 
     # Pattern to match version numbers (v followed by digits)
     pattern = r'v(\d+)'

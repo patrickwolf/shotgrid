@@ -226,7 +226,7 @@ class Entity(object):
                 {"field_name": "created_at", "direction": "desc"}])
             versions = [r['code'] for r in results if 'code' in r]
             if not versions:
-                return 0
+                return None
             # Get the highest version number from the list
             return helpers.get_highest_version(versions)
         except socket.gaierror as err:
