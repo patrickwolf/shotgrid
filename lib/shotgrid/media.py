@@ -80,7 +80,7 @@ class Movie(Entity):
             log.error("download failed")
         return dl
 
-    def upload(self, file_path: str = None) -> bool:
+    def upload(self, file_path: str = None, overwrite: bool = False) -> bool:
         """Upload a file to the entity's sg_uploaded_movie field."""
         if not file_path or not os.path.exists(file_path):
             log.error(f"File not found: {file_path}")
@@ -88,8 +88,11 @@ class Movie(Entity):
 
         attachment_exists = self.check_attachment_exists('sg_uploaded_movie')
         if attachment_exists:
-            log.info(f"Attachment already exists for {self.parent().entity_type} {self.parent().id()}")
-            return False
+            if overwrite:
+                self.delete_attachment('sg_uploaded_movie')
+            else:
+                log.info(f"Attachment already exists for {self.parent().entity_type} {self.parent().id()}")
+                return False
 
         for i in range(10):
             try:
@@ -131,5 +134,23 @@ class Movie(Entity):
         if result[field_name]:
             log.debug('File already exists for %s %s in field %s' %
                       (self.parent().entity_type, self.parent().id(), field_name))
+            return True
+        return False
+
+    def delete_attachment(self, field_name: str = 'sg_uploaded_movie'):
+        """For file mode only, if uploading files to a specific field, checks to see
+        if there is already a file in that entity field. File upload will fail if
+        a file already exists on the entity so we don't accidentally blow things
+        away. You can disable this if you like.
+        """
+        # not applicable if we're not uploading to a field
+        if not field_name:
+            return False
+        result = self.api().find_one(self.parent().entity_type, [['id', 'is', self.parent().id()]], [field_name])
+        if result[field_name]:
+            attachment_id = result[field_name].get('id')
+            self.api().delete('Attachment', attachment_id)
+            log.info('Attachment deleted for %s %s in field %s' %
+                     (self.parent().entity_type, self.parent().id(), field_name))
             return True
         return False
