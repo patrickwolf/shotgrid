@@ -87,7 +87,7 @@ class Playlist(Entity):
         if filters:
             params.extend(filters)
 
-        results = self.api().find("Version", params, fields)
+        results = self.api().find("Version", params, fields, order=[{"field_name": "code", "direction": "asc"}])
 
         for r in results:
             versions.append(Version(self, r))

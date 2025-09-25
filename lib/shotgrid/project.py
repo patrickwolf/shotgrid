@@ -217,7 +217,7 @@ class Project(Entity):
         except socket.gaierror as e:
             raise
 
-    def get_playlists(self, code: str = None, fields: list = None):
+    def get_playlists(self, code: str = None, fields: list = None, id: int = None):
         """Returns a list of playlists from shotgrid for this project.
 
         :param code: playlist code
@@ -230,6 +230,9 @@ class Project(Entity):
 
         if code is not None:
             params.append(["code", "is", code])
+
+        if id is not None:
+            params.append(["id", "is", id])
 
         try:
             results = self.api().find("Playlist", params, fields=fields)
