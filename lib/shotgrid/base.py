@@ -67,6 +67,7 @@ class Entity(object):
         self._parent = parent
         self._snapshot_data = None  # Initialize snapshot data as None
         self._set_data(data or {})
+        self.snapshot()  # Take initial snapshot
         if not self.entity_type:
             self.entity_type = self.__class__.__name__
 
@@ -120,6 +121,26 @@ class Entity(object):
             if parent.type() == "Shotgrid":
                 return parent
             parent = parent.parent()
+
+    def get_batch_cmds(self):
+        """Returns data dictionary for batch save."""
+        data = self.diff()
+        data = helpers.remove_keys(data, ['id', 'type'])
+
+        if self.id():
+            batch = []
+            if "tags" in data:
+                batch.append({"request_type": "update", "entity_type": self.type(),
+                              "entity_id": self.id(), "multi_entity_update_modes": {"tags": "set"},
+                              "data": {"tags": data["tags"]}})
+                del data["tags"]
+            if data:
+                batch.append({"request_type": "update", "entity_type": self.type(),
+                              "entity_id": self.id(), "data": data})
+        else:
+            batch = [{"request_type": "create", "entity_type": self.type(),
+                     "data": data}]
+        return batch
 
     def save(self):
         """Saves the current entity in shotgrid."""
@@ -302,6 +323,7 @@ class Entity(object):
         """
 
         fields = fields or self.fields
+        filters = filters or []
 
         if code is not None:
             filters.append(["code", "is", code])
@@ -606,7 +628,8 @@ class Entity(object):
         """
         # Create a deep copy of the current data to avoid reference issues
         import copy
-        self._snapshot_data = copy.copy(self.data)
+        snap = copy.copy(self.data)
+        self._snapshot_data = snap
         return self
 
     def diff(self):

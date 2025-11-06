@@ -44,6 +44,7 @@ from shotgrid.sequence import Sequence
 from shotgrid.shot import Shot
 from shotgrid.ymedia import YMedia
 from shotgrid.ypackage import YPackage
+from functools import cache
 
 
 class Project(Entity):
@@ -447,8 +448,6 @@ class Project(Entity):
         :return: dictionary of published file types and ids
         """
         fields = ("sg_typegroup", "sg_extensions", "sg_autoupload", "code")
-        result = self.api().get_lookup("PublishedFileType",
-                                       "sg_extensions", fields=fields, separator=",")
 
         try:
             return self.api().get_lookup("PublishedFileType",

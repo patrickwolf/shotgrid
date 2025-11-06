@@ -1,3 +1,6 @@
+from typing import Set, List, Dict, Any
+
+
 def get_highest_version(version_strings):
     """
     Extract the highest version number from a list of version strings.
@@ -99,6 +102,36 @@ def list_of_dicts_to_dict(items, key, separator=None) -> dict:
     return result
 
 
+def strip_entity_names(data: Any) -> Any:
+    """
+    Recursively process a data structure and remove 'name' fields from dictionaries
+    that contain 'type', 'id', and 'name' keys (Shotgrid entity references).
+
+    Args:
+        data: The data structure to process (dict, list, or other)
+
+    Returns:
+        The processed data structure with entity names removed
+    """
+    if isinstance(data, dict):
+        # Check if this dict is a Shotgrid entity reference
+        if all(key in data for key in ['type', 'id', 'name']):
+            # Create a copy and remove the name field
+            result = data.copy()
+            result.pop('name', None)
+            # Recursively process remaining values
+            return {k: strip_entity_names(v) for k, v in result.items()}
+        else:
+            # Recursively process all values in the dict
+            return {k: strip_entity_names(v) for k, v in data.items()}
+    elif isinstance(data, list):
+        # Recursively process all items in the list
+        return [strip_entity_names(item) for item in data]
+    else:
+        # Return primitive values as-is
+        return data
+
+
 def dict_diff(original: dict, updated: dict) -> dict:
     """
     Returns a dictionary containing only the keys that are new or have changed values.
@@ -110,6 +143,17 @@ def dict_diff(original: dict, updated: dict) -> dict:
     Returns:
         A dictionary containing only new keys or keys with changed values
     """
+    # Strip entity names from both current and snapshot data
+    original = strip_entity_names(original)
+    updated = strip_entity_names(updated)
+
+    # Sort tags by id to ensure consistent comparison
+    # TODO: More list need to be sorted
+    if "tags" in original:
+        original["tags"].sort(key=lambda x: x['id'])
+    if "tags" in updated:
+        updated["tags"].sort(key=lambda x: x['id'])
+
     diff = {}
 
     # Find new or changed keys
