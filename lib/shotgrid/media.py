@@ -82,8 +82,8 @@ class Movie(Entity):
 
     def upload(self, file_path: str = None, overwrite: bool = False) -> bool:
         """Upload a file to the entity's sg_uploaded_movie field."""
-        if not file_path or not os.path.exists(file_path):
-            log.error(f"File not found: {file_path}")
+        if not file_path or not os.path.exists(file_path) or os.path.getsize(file_path) == 0:
+            log.error(f"File not found or empty: {file_path}")
             return False
 
         attachment_exists = self.check_attachment_exists('sg_uploaded_movie')
