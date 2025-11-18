@@ -155,6 +155,22 @@ class Shotgrid(FPT):
             entities.append(entity_class(self, data=r))
         return entities
 
+    @functools.cache
+    def get_statuses(self):
+        """Returns a list of status values for given entity type.
+
+        :param entity_type: entity type to get statuses for
+        :return: list of status values
+        """
+
+        try:
+            results = self.find("Status", [], ['name', 'code', 'sg_status_group', 'bg_color'],
+                                order=[{'field_name': 'code', 'direction': 'asc'}])
+            return {status['code']: status for status in results}
+            return results
+        except socket.gaierror as e:
+            raise
+
     def get_projects(self, name: str = None, fields: list = None):
         """Returns a list of Project entities.
 
