@@ -63,6 +63,23 @@ entity_type_class_map = dict(
 )
 
 
+def configure_entity_types(package: str = None, media: str = None):
+    """Set the per-site CustomEntity types for YPackage and YMedia.
+
+    The CustomEntity numbers differ per ShotGrid site, so they come from config
+    instead of the class defaults. Applies process-wide (class attributes).
+
+    :param package: entity type for YPackage, e.g. CustomEntity07
+    :param media: entity type for YMedia, e.g. CustomEntity06
+    """
+    for cls, entity_type in ((YPackage, package), (YMedia, media)):
+        if not entity_type or entity_type == cls.entity_type:
+            continue
+        entity_type_class_map.pop(cls.entity_type, None)
+        cls.entity_type = entity_type
+        entity_type_class_map[entity_type] = cls
+
+
 class Status(str, Enum):
     """
     Enum representing the various status values used in the ETL process.
