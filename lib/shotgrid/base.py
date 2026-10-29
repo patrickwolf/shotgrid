@@ -514,8 +514,8 @@ class Entity(object):
         VERSION = "Version"
         PUBLISHED_FILE = "PublishedFile"
         PLAYLIST = "Playlist"
-        YPACKAGE = "CustomEntity07"
-        YMEDIA = "CustomEntity06"
+        YPACKAGE = "CustomEntity07"  # default only; the live value is YPackage.entity_type
+        YMEDIA = "CustomEntity06"  # default only; the live value is YMedia.entity_type
         GROUP = "Group"
         PERSON = "Person"
 
@@ -537,6 +537,9 @@ class Entity(object):
         if not entity_data:
             return None
         parent = self
+        # Local import: ypackage/ymedia import base. Their entity_type is per-site (configure_entity_types).
+        from shotgrid.ypackage import YPackage
+        from shotgrid.ymedia import YMedia
 
         # Code field mapping for different entity types
         codes = {
@@ -548,8 +551,8 @@ class Entity(object):
             self.EntityType.VERSION: "code",
             self.EntityType.PUBLISHED_FILE: "code",
             self.EntityType.PLAYLIST: "code",
-            self.EntityType.YPACKAGE: "code",
-            self.EntityType.YMEDIA: "code",
+            YPackage.entity_type: "code",
+            YMedia.entity_type: "code",
             self.EntityType.GROUP: "code",
             self.EntityType.PERSON: "name",
         }
@@ -589,8 +592,8 @@ class Entity(object):
             "Playlist": "get_playlists",
             "Delivery": "get_deliveries",
             "PublishedFile": "get_published_files",
-            "CustomEntity07": "get_ypackage",
-            "CustomEntity06": "get_ymedia"
+            YPackage.entity_type: "get_ypackage",
+            YMedia.entity_type: "get_ymedia"
         }
 
         # find_entities
