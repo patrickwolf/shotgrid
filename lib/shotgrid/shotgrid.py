@@ -222,13 +222,14 @@ class Shotgrid(FPT):
         """Returns shotgrid entity type as str."""
         return self.__class__.__name__
 
-    def retire_recent_entities(self, entity_types: list, project_id: int, minutes: int = 60, action: str = "retire"):
+    def retire_recent_entities(self, entity_types: list, project_id: int, minutes: int = 60, action: str = "retire", script_user_id: int = None):
         """Retires entities that have been created in the last n minutes or removes the auto_tag from them.
 
         :param entity_types: list of entity types to retire or untag
         :param project_id: project ID to filter entities by
         :param minutes: number of minutes to check for creation (default: 60)
         :param action: "retire" to delete entities or "untag" to remove auto_tag
+        :param script_user_id: ShotGrid ApiUser ID to filter created_by
         """
         if not entity_types:
             raise ValueError("entity_types must not be empty")
@@ -240,6 +241,8 @@ class Shotgrid(FPT):
             raise ValueError("project_id must be an int")
         if action not in ["retire", "untag"]:
             raise ValueError("action must be either 'retire' or 'untag'")
+        if not script_user_id or not isinstance(script_user_id, int):
+            raise ValueError("script_user_id must be an int")
 
         # Calculate timestamp for X minutes ago
         import datetime
@@ -254,8 +257,8 @@ class Shotgrid(FPT):
         filters = [
             ['project', 'is', {'type': 'Project', 'id': project_id}],
             ['created_at', 'greater_than', minutes_ago],  # Use timestamp directly
-            ['tags', 'is', Entity.auto_tag],
-            ['created_by', 'is', {'id': 93, 'name': 'Yeti 1.0', 'type': 'ApiUser'}],
+            # ['tags', 'is', Entity.auto_tag],
+            ['created_by', 'is', {'type': 'ApiUser', 'id': script_user_id}],
         ]
 
         items = []
