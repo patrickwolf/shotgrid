@@ -283,7 +283,8 @@ class Shotgrid(FPT):
                     "entity_type": item["type"],
                     "entity_id": item["id"],
                     "multi_entity_update_modes": {"tags": "remove"},
-                    "data": {"tags": [Entity.auto_tag]}
+                    # the pipeline tag Entity used to add to everything it saved; no longer set
+                    "data": {"tags": [{'type': 'Tag', 'id': 341}]}
                 })
 
         if batch_data:

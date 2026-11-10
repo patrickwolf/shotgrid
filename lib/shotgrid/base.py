@@ -46,7 +46,6 @@ class Entity(object):
 
     # must be set on the subclass
     entity_type = None
-    auto_tag = {'type': 'Tag', 'id': 341}
 
     # default fields to fetch, override on subclasses
     fields = [
@@ -149,8 +148,6 @@ class Entity(object):
 
         data = helpers.remove_keys(self.data, ['id', 'type'])
         data.update({"project": self.get_project().data})
-        # Set Pipeline Tag
-        self._set_auto_tag(data)
         result = self.api().create(self.entity_type, data)
         self._set_data(result)
         return self
@@ -160,8 +157,6 @@ class Entity(object):
         # Those aren't needed for creating a new entity
         data = helpers.remove_keys(data, ['id', 'type'])
         data.update({"project": self.get_project().data})
-        # Set Pipeline Tag
-        self._set_auto_tag(data)
         result = self.api().create(entity_type, data)
         return result
 
@@ -412,8 +407,6 @@ class Entity(object):
         if not data:
             return self.data
 
-        update_mode = self._set_auto_tag(update_mode, data)
-
         # Remove keys that are not in the fields lis
         data = helpers.remove_keys(data, ['id', 'type'])
         result = self.api().update(
@@ -421,43 +414,6 @@ class Entity(object):
         )
         self.data.update(result)
         return self
-
-    def _set_auto_tag(self, update_mode=None, data=None):
-        """
-        Ensures that the auto_tag is included in the entity's tags.
-
-        Args:
-            update_mode (dict, optional): Dictionary of update modes for multi-entity fields
-            data (dict, optional): The data dictionary to modify
-
-        Returns:
-            dict: The updated update_mode dictionary
-        """
-        # Initialize update_mode if not provided
-        if update_mode is None:
-            update_mode = {}
-
-        # If no data provided or no auto_tag defined, just return the update_mode
-        if data is None or not self.auto_tag:
-            return update_mode
-
-        # Get current tags or initialize empty list
-        tags_list = data.get('tags')
-        if tags_list is None:
-            tags_list = []
-            data["tags"] = tags_list
-
-        # Extract tag IDs from the tag dictionaries
-        tag_ids = {tag.get("id") for tag in tags_list if isinstance(tag, dict)}
-
-        # Add auto_tag if it's not already in the list
-        if self.auto_tag['id'] not in tag_ids:
-            data["tags"].append(self.auto_tag)
-
-        # Ensure update_mode includes proper setting for tags
-        update_mode['tags'] = 'set'
-
-        return update_mode
 
     @property
     def tags(self) -> Set[int]:  # Changed return type
