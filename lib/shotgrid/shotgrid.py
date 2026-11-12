@@ -230,6 +230,7 @@ class Shotgrid(FPT):
         :param minutes: number of minutes to check for creation (default: 60)
         :param action: "retire" to delete entities or "untag" to remove auto_tag
         :param script_user_id: ShotGrid ApiUser ID to filter created_by
+        :returns: the entities found (type, id and name/code/content), retired or untagged
         """
         if not entity_types:
             raise ValueError("entity_types must not be empty")
@@ -267,7 +268,7 @@ class Shotgrid(FPT):
 
         action_str = "retiring" if action == "retire" else "removing auto_tag from"
         log.info(f"{action_str.capitalize()} {len(items)} entities of type {entity_types} that have been created in the last {minutes} minutes")
-        log.info(items)
+        log.debug(items)  # callers print the returned items
 
         batch_data = []
         for item in items:
@@ -289,6 +290,7 @@ class Shotgrid(FPT):
 
         if batch_data:
             self.batch(batch_data)
+        return items
 
     @functools.lru_cache(maxsize=None)
     def get_lookup(self, entity_type: str, key_field: str = "code", fields: tuple = None, separator: str = None):
