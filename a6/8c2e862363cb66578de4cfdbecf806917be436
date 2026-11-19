@@ -1,0 +1,27 @@
+lib/shotgrid/ymedia.py
+  s_c4758d780b5b7f::t_27276e9b7d0cd1 5,12
+lib/shotgrid/ypackage.py
+  s_c4758d780b5b7f::t_27276e9b7d0cd1 5,14
+lib/shotgrid/shotgrid.py
+  s_c4758d780b5b7f::t_27276e9b7d0cd1 38,46,62-78,85-88,93
+  s_c4758d780b5b7f::t_0fa9a6bcd1b307 61
+lib/shotgrid/base.py
+  s_c4758d780b5b7f::t_27276e9b7d0cd1 37,45-59
+  s_c4758d780b5b7f::t_329817111343da 60-61
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.6",
+  "base_commit_sha": "a68c2e862363cb66578de4cfdbecf806917be436",
+  "prompts": {},
+  "sessions": {
+    "s_c4758d780b5b7f": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "27046987-382b-45ff-96f3-0862a31ae085",
+        "model": "claude-fable-5-2"
+      },
+      "human_author": "Patrick Wolf <patrick@patrickwolf.net>"
+    }
+  }
+}
