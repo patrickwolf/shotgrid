@@ -35,6 +35,7 @@ Contains wrapper class for shotgrid api.
 """
 
 import socket
+from collections.abc import Mapping
 from enum import Enum, auto
 import functools
 import shotgun_api3
@@ -42,7 +43,7 @@ import shotgun_api3
 import shotgrid.helpers as helpers
 from shotgrid import config
 from shotgrid.asset import Asset
-from shotgrid.base import Entity
+from shotgrid.base import Entity, site_entity_types
 from shotgrid.logger import log
 from shotgrid.person import Person
 from shotgrid.group import Group
@@ -57,27 +58,39 @@ from shotgrid.publishedfile import PublishedFile
 from shotgrid.ymedia import YMedia
 from shotgrid.ypackage import YPackage
 
-# maps entity type string to wrapper class
-entity_type_class_map = dict(
-    [(cls.entity_type, cls) for cls in Entity.__subclasses__()]
-)
+
+class SiteClassMap(Mapping):
+    """Entity type string -> wrapper class, for the current request: YPackage and YMedia under their per-site types."""
+
+    def _now(self):
+        return {cls.entity_type: cls for cls in Entity.__subclasses__()}
+
+    def __getitem__(self, key):
+        return self._now()[key]
+
+    def __iter__(self):
+        return iter(self._now())
+
+    def __len__(self):
+        return len(self._now())
+
+
+entity_type_class_map = SiteClassMap()
 
 
 def configure_entity_types(package: str = None, media: str = None):
     """Set the per-site CustomEntity types for YPackage and YMedia.
 
     The CustomEntity numbers differ per ShotGrid site, so they come from config
-    instead of the class defaults. Applies process-wide (class attributes).
+    instead of the class defaults. Applies to the current request or job only (a ContextVar), so requests
+    for different sites can overlap. Each call replaces the earlier one: a type left out falls back to the
+    class default. A thread started inside a request sees them only when started with
+    contextvars.copy_context().run.
 
     :param package: entity type for YPackage, e.g. CustomEntity07
     :param media: entity type for YMedia, e.g. CustomEntity06
     """
-    for cls, entity_type in ((YPackage, package), (YMedia, media)):
-        if not entity_type or entity_type == cls.entity_type:
-            continue
-        entity_type_class_map.pop(cls.entity_type, None)
-        cls.entity_type = entity_type
-        entity_type_class_map[entity_type] = cls
+    site_entity_types.set({cls: entity_type for cls, entity_type in ((YPackage, package), (YMedia, media)) if entity_type})
 
 
 class Status(str, Enum):

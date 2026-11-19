@@ -34,11 +34,29 @@ Contains the entity base class..
 """
 
 import socket
+from contextvars import ContextVar
 from enum import Enum, auto
 from typing import Set, List, Dict, Any, Iterable  # Added List, Dict, Any, Iterable
 from shotgrid.dotdictify import dotdictify
 import shotgrid.helpers as helpers
 from shotgrid.logger import log
+
+
+# {class: 'CustomEntityNN'} for the current request or job; set by configure_entity_types, never changed in place.
+site_entity_types = ContextVar("site_entity_types", default={})
+
+
+class SiteEntityType:
+    """Class attribute `entity_type` that answers with the current request's value, else the class default."""
+
+    def __init__(self, default: str):
+        self.default = default
+
+    def __set_name__(self, owner, name):
+        self.owner = owner
+
+    def __get__(self, obj, cls=None):
+        return site_entity_types.get().get(self.owner, self.default)
 
 
 class Entity(object):

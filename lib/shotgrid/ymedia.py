@@ -2,14 +2,14 @@ __doc__ = """
 Contains Version base class.
 """
 
-from shotgrid.base import Entity
+from shotgrid.base import Entity, SiteEntityType
 from shotgrid.logger import log
 
 
 class YMedia(Entity):
     """Shotgrid Ingest entity."""
 
-    entity_type = "CustomEntity06"
+    entity_type = SiteEntityType("CustomEntity06")
 
     fields = [
         "id",
