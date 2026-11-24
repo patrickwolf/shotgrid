@@ -22,7 +22,6 @@ class YPackage(Entity):
         "sg_yissue",
         "sg_ynotes",
         "sg_playlist",
-        "sg_ystatus",
         "sg_ysteps",
         "sg_ylogs",
         "sg_ymedia_1",
